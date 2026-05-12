@@ -31,14 +31,6 @@
 html,body{height:100%;overflow:hidden}
 body{display:flex;flex-direction:column;font-family:var(--font);background:linear-gradient(180deg,#f8f6fa 0%,#f0ecf5 40%,#ece6f2 100%);color:var(--text);font-size:15px;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
 
-/* Topbar - compact */
-.topbar{background:rgba(255,255,255,0.9);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--border2);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:50px;flex-shrink:0;z-index:100}
-.topbar-logo{font-weight:800;font-size:1rem;letter-spacing:-0.3px}
-.topbar-logo .dot{color:var(--purple)}
-.topbar-logo .dot2{color:var(--blue)}
-.topbar-actions{display:flex;gap:8px;align-items:center}
-.btn-icon-sm{width:32px;height:32px;border-radius:50%;border:1px solid var(--border2);background:var(--surface);cursor:pointer;font-size:0.8rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.btn-icon-sm:active{transform:scale(.92);background:var(--purple4)}
 
 /* Main pages */
 .main-pages{flex:1;overflow:hidden;position:relative}
@@ -206,7 +198,7 @@ body.layout-pc ::-webkit-scrollbar-thumb:hover{background:var(--text3)}
 @keyframes syncPulse{0%,100%{opacity:1;background:var(--purple)}50%{opacity:0.3;background:var(--purple2)}}
 
 /* Toast */
-.toast-container{position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none}
+.toast-container{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none}
 .toast{background:#1e1e1e;color:#fff;padding:8px 20px;border-radius:18px;font-size:0.82rem;font-weight:600;pointer-events:auto;animation:toastIn .3s}
 @keyframes toastIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
 
@@ -216,7 +208,7 @@ body.layout-pc ::-webkit-scrollbar-thumb:hover{background:var(--text3)}
 
 /* Glass */
 body.glass .card,body.glass .note-card,body.glass .stat-card,body.glass .sub-card{background:rgba(255,255,255,0.7);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-body.glass .topbar,body.glass .bottom-nav,body.glass .editor-header{background:rgba(255,255,255,0.75);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+body.glass .bottom-nav,body.glass .editor-header{background:rgba(255,255,255,0.75);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 body.glass{background-image:linear-gradient(135deg,#f0e6f8,#e6eaf8,#f5f0fa,#e8ecf8,#f3e8f8);background-attachment:fixed}
 
 /* Charts area */
@@ -284,17 +276,6 @@ input[type=range]::-webkit-slider-thumb:active{transform:scale(1.15)}
 </style>
 </head>
 <body>
-
-<div class="topbar">
-  <div class="topbar-logo"><span class="dot">◈</span> 考研笔记 <span class="dot2">◈</span></div>
-  <div class="topbar-actions">
-    <button class="btn-icon-sm" id="sfxToggle" onclick="toggleSfxUI()" title="音效" style="font-size:0.8rem">🔊</button>
-    <button class="btn-icon-sm" id="musicToggle" onclick="toggleMusicUI()" title="背景音乐" style="font-size:0.8rem">🎵</button>
-    <button class="btn-icon-sm" onclick="installPWA()" title="安装到手机" style="font-size:0.9rem">📲</button>
-    <button class="btn-icon-sm" id="glassToggle" onclick="toggleGlass()" title="透明效果">🔲</button>
-    <button class="btn-icon-sm" id="layoutToggle" onclick="toggleLayout()" title="电脑版" style="font-size:0.9rem">💻</button>
-  </div>
-</div>
 
 <div class="main-pages">
 
@@ -1633,8 +1614,6 @@ window.toggleLayout = function(){
 function applyPCLayout(){
   const on=!!A.settings.pcLayout;
   document.body.classList.toggle('layout-pc',on);
-  const btn=document.getElementById('layoutToggle');
-  if(btn) btn.textContent=on?'📱':'💻';
   const cityCard=document.getElementById('cityMapCard');
   const timerInner=document.getElementById('panel-timer')?.querySelector('.inner');
   const syncCard=document.getElementById('syncCard');
@@ -2628,39 +2607,29 @@ window.onDensitySlide = function(v){
   applyDensity();
 };
 
-// Update toggleUI functions to sync both toggle instances
-const _origToggleGlass = window.toggleGlass;
+// Toggle functions (sync to settings panel switches)
 window.toggleGlass = function(){
   A.settings.glass=!A.settings.glass;
   document.body.classList.toggle('glass',A.settings.glass);
-  const topBtn = document.getElementById('glassToggle');
-  if(topBtn) topBtn.textContent = A.settings.glass?'🔳':'🔲';
   const g2 = document.getElementById('glassToggle2');
   if(g2) g2.checked = A.settings.glass;
   save();toast(A.settings.glass?'毛玻璃 开 ✓':'毛玻璃 关');
 };
 
-const _origToggleMusic = window.toggleMusicUI;
 window.toggleMusicUI = function(){
   const on = Sound.toggleMusic();
-  const topBtn = document.getElementById('musicToggle');
-  if(topBtn){ topBtn.textContent = on?'🎵':'🎵'; topBtn.style.opacity = on?'1':'0.4'; }
   const m2 = document.getElementById('musicToggle2');
   if(m2) m2.checked = on;
   toast(on?'背景音乐 开 ♪':'背景音乐 关');
 };
 
-const _origToggleSfx = window.toggleSfxUI;
 window.toggleSfxUI = function(){
   const on = Sound.toggleSfx();
-  const topBtn = document.getElementById('sfxToggle');
-  if(topBtn){ topBtn.textContent = on?'🔊':'🔇'; topBtn.style.opacity = on?'1':'0.4'; }
   const s2 = document.getElementById('sfxToggle2');
   if(s2) s2.checked = on;
   toast(on?'音效 开':'音效 关');
 };
 
-const _origToggleLayout = window.toggleLayout;
 window.toggleLayout = function(){
   A.settings.pcLayout=!A.settings.pcLayout;
   applyPCLayout();
@@ -2685,13 +2654,6 @@ window.addEventListener('wheel',function(e){
   toast('🔍 '+next+'%');
 },{capture:true,passive:false});
 
-document.querySelector('.topbar-logo').addEventListener('dblclick',function(){
-  zoomLevel=1.0; applyZoom();
-  const zSlider = document.getElementById('zoomSlider');
-  if(zSlider) zSlider.value = 100;
-  document.getElementById('zoomVal').textContent = '100%';
-  toast('🔍 缩放已重置');
-});
 
 // ==================== INIT ====================
 function init(){
@@ -2699,12 +2661,9 @@ function init(){
   if(s.zoom)zoomLevel=s.zoom;
   applyZoom();
   applyDensity();
-  if(s.glass){document.body.classList.add('glass');document.getElementById('glassToggle').textContent='🔳'}
-  if(s.pcLayout){applyPCLayout();}
+  if(s.glass)document.body.classList.add('glass');
+  if(s.pcLayout)applyPCLayout();
   Sound._on=s.music!==false;Sound._sfxOn=s.sfx!==false;
-  document.getElementById('musicToggle').style.opacity=Sound._on?'1':'0.4';
-  document.getElementById('sfxToggle').textContent=Sound._sfxOn?'🔊':'🔇';
-  document.getElementById('sfxToggle').style.opacity=Sound._sfxOn?'1':'0.4';
   initSettingsUI();
   updateSubjectUI();
   const chipsContainer=document.getElementById('customSubjectChips');
@@ -2719,7 +2678,7 @@ function init(){
   if(A.notes.length>0) openNote(A.notes[0].id);
   if(!A.settings._pwaGuideShown){
     A.settings._pwaGuideShown=true;save();
-    setTimeout(()=>toast('📲 点顶栏 📲 按钮可安装到手机主屏幕'),1500);
+    setTimeout(()=>toast('📲 浏览器菜单 → 添加到主屏幕'),1500);
   }
 }
 init();
