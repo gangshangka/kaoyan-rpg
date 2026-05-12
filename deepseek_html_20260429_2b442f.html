@@ -63,7 +63,7 @@ body.layout-pc .main-panel{position:static;display:block;width:auto;height:auto;
 body.layout-pc .main-panel>.inner{padding:0;display:flex;flex-direction:column;gap:12px}
 body.layout-pc .main-panel>.inner>.card{margin-bottom:0}
 body.layout-pc #panel-notes{grid-column:1;grid-row:1/3}
-body.layout-pc #panel-sync{display:none}
+body.layout-pc #panel-settings{display:none}
 body.layout-pc #panel-timer{grid-column:2;grid-row:1/3}
 body.layout-pc #panel-dashboard{grid-column:3;grid-row:1/3}
 body.layout-pc #panel-quiz{grid-column:1/4;grid-row:3}
@@ -202,12 +202,8 @@ body.layout-pc ::-webkit-scrollbar-thumb:hover{background:var(--text3)}
 .sync-row label{font-size:0.72rem;color:var(--text3);width:50px;flex-shrink:0}
 .sync-input{flex:1;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--radius2);font-family:var(--font);font-size:0.8rem;outline:none}
 .sync-input:focus{border-color:var(--purple2)}
-.sync-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--text3);flex-shrink:0}
-.sync-dot.ok{background:#2da44e}
-.sync-dot.syncing{animation:syncPulse 0.8s infinite}
+.sync-dot-inline{transition:background .3s}
 @keyframes syncPulse{0%,100%{opacity:1;background:var(--purple)}50%{opacity:0.3;background:var(--purple2)}}
-.sync-collapsed #syncCardBody{display:none}
-.sync-collapsed .sync-dot,.sync-collapsed #syncText{display:none}
 
 /* Toast */
 .toast-container{position:fixed;top:56px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none}
@@ -233,7 +229,30 @@ body.glass{background-image:linear-gradient(135deg,#f0e6f8,#e6eaf8,#f5f0fa,#e8ec
   .stat-row{grid-template-columns:1fr 1fr 1fr}
   .timer-display{font-size:4.4rem}
 }
-/* Quiz */
+/* Settings */
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border2);gap:10px}
+.setting-row:last-child{border-bottom:none}
+.setting-row .s-label{font-size:0.84rem;font-weight:600;color:var(--text);flex-shrink:0;min-width:50px}
+.setting-row .s-val{font-size:0.72rem;color:var(--text3);min-width:32px;text-align:right;flex-shrink:0}
+/* Range slider */
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--purple3),var(--purple));outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:26px;height:26px;border-radius:50%;background:#fff;border:2.5px solid var(--purple);box-shadow:0 2px 8px rgba(175,0,219,.18);cursor:pointer;transition:transform .12s}
+input[type=range]::-webkit-slider-thumb:active{transform:scale(1.15)}
+/* Toggle switch */
+.toggle-sw{position:relative;width:48px;height:28px;flex-shrink:0;cursor:pointer}
+.toggle-sw input{opacity:0;width:0;height:0}
+.toggle-sw .slider{position:absolute;inset:0;background:var(--border);border-radius:14px;transition:all .25s}
+.toggle-sw .slider::before{content:'';position:absolute;left:3px;bottom:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15);transition:all .25s}
+.toggle-sw input:checked+.slider{background:var(--purple)}
+.toggle-sw input:checked+.slider::before{transform:translateX(20px)}
+.setting-section{margin-bottom:10px}
+.setting-section h4{font-size:0.78rem;font-weight:700;color:var(--purple);margin-bottom:4px;display:flex;align-items:center;gap:5px}
+/* Collapse card */
+.collapse-card .card-header{cursor:pointer;user-select:none}
+.collapse-card .card-body{overflow:hidden;transition:max-height .3s ease}
+.collapse-card.collapsed .card-body{max-height:0!important;padding-top:0;padding-bottom:0;border:none}
+
+/* Settings */
 .quiz-textarea{width:100%;height:160px;padding:12px;font-size:0.85rem;border:1.5px solid var(--border);border-radius:var(--radius2);resize:vertical;font-family:var(--font);outline:none;background:var(--surface)}
 .quiz-textarea:focus{border-color:var(--purple2)}
 .quiz-card-q{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow)}
@@ -242,6 +261,8 @@ body.glass{background-image:linear-gradient(135deg,#f0e6f8,#e6eaf8,#f5f0fa,#e8ec
 .quiz-option{display:block;padding:8px 10px;margin:3px 0;border-radius:8px;border:1px solid var(--border2);background:var(--surface2);cursor:pointer;font-size:0.84rem;transition:all .12s}
 .quiz-option:active{background:var(--purple4);border-color:var(--purple2)}
 .quiz-option input{margin-right:8px;accent-color:var(--purple)}
+.quiz-check-btn{width:100%;padding:8px 0;margin-top:8px;border:1.5px solid var(--purple2);border-radius:8px;background:var(--purple4);color:var(--purple);font-family:var(--font);font-size:0.82rem;font-weight:600;cursor:pointer;transition:all .15s}
+.quiz-check-btn:active{background:var(--purple3)}
 .quiz-feedback{margin-top:8px;font-size:0.82rem;padding:8px 10px;border-radius:8px;background:var(--surface2);display:none;line-height:1.5}
 .quiz-feedback.correct{background:#f0fdf4;color:#166534;display:block}
 .quiz-feedback.wrong{background:#fef2f2;color:#991b1b;display:block}
@@ -454,9 +475,9 @@ body.glass{background-image:linear-gradient(135deg,#f0e6f8,#e6eaf8,#f5f0fa,#e8ec
   <!-- Quiz Tab -->
   <div class="main-panel" id="panel-quiz">
     <div class="inner">
-      <div class="card">
-        <div class="card-header">📝 题库管理 <span style="font-size:0.7rem;color:var(--text3)" id="quizBankCount"></span></div>
-        <div class="card-body">
+      <div class="card collapse-card collapsed" id="quizBankCard">
+        <div class="card-header" onclick="toggleCollapseCard('quizBankCard')">📝 题库管理 <span style="font-size:0.7rem;color:var(--text3)" id="quizBankCount"></span><span style="font-size:0.7rem;color:var(--text3);margin-left:auto" class="collapse-arrow">▶</span></div>
+        <div class="card-body"><div style="height:1px"></div>
           <div id="quizBankList" style="max-height:200px;overflow-y:auto;margin-bottom:10px">
             <div style="font-size:0.82rem;color:var(--text3)">暂无题库，粘贴题目生成题库</div>
           </div>
@@ -467,9 +488,9 @@ body.glass{background-image:linear-gradient(135deg,#f0e6f8,#e6eaf8,#f5f0fa,#e8ec
           <div style="font-size:0.7rem;color:var(--text3);margin-top:4px">导入 .json 题库文件：<input type="file" accept=".json" onchange="importQuizBank(event)" style="font-size:0.75rem"></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-header">✏️ 粘贴题目</div>
-        <div class="card-body">
+      <div class="card collapse-card collapsed" id="quizPasteCard">
+        <div class="card-header" onclick="toggleCollapseCard('quizPasteCard')">✏️ 粘贴题目<span style="font-size:0.7rem;color:var(--text3);margin-left:auto" class="collapse-arrow">▶</span></div>
+        <div class="card-body"><div style="height:1px"></div>
           <textarea class="quiz-textarea" id="quizRawInput" placeholder="粘贴 DeepSeek 生成的题目...
 格式：【题型】题干
 A. 选项
@@ -494,12 +515,64 @@ B. 选项
     </div>
   </div>
 
-  <!-- Sync Tab -->
-  <div class="main-panel" id="panel-sync">
+  <!-- Settings Tab -->
+  <div class="main-panel" id="panel-settings">
     <div class="inner">
       <div class="card">
-        <div class="card-header" onclick="toggleSyncCollapse()" style="cursor:pointer">☁ 云端同步配置 <span id="syncCollapseArrow" style="font-size:0.7rem;color:var(--text3);margin-left:auto">▼</span></div>
-        <div class="card-body" id="syncCardBody">
+        <div class="card-header">⚙ 界面调节</div>
+        <div class="card-body">
+          <div class="setting-section">
+            <h4>🔤 字体大小</h4>
+            <div class="setting-row">
+              <span class="s-label">小</span>
+              <input type="range" id="fontSizeSlider" min="0" max="2" value="1" step="1" oninput="onFontSizeSlide(this.value)">
+              <span class="s-val" id="fontSizeVal">标准</span>
+            </div>
+          </div>
+          <div class="setting-section">
+            <h4>🔍 缩放</h4>
+            <div class="setting-row">
+              <span class="s-label">70%</span>
+              <input type="range" id="zoomSlider" min="70" max="160" value="100" step="5" oninput="onZoomSlide(this.value)">
+              <span class="s-val" id="zoomVal">100%</span>
+            </div>
+          </div>
+          <div class="setting-section">
+            <h4>📐 显示密度</h4>
+            <div class="setting-row">
+              <span class="s-label">紧凑</span>
+              <input type="range" id="densitySlider" min="0" max="2" value="1" step="1" oninput="onDensitySlide(this.value)">
+              <span class="s-val" id="densityVal">标准</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">🔘 功能开关</div>
+        <div class="card-body">
+          <div class="setting-row">
+            <span class="s-label">🔲 毛玻璃</span>
+            <label class="toggle-sw"><input type="checkbox" id="glassToggle2" onchange="toggleGlass()"><span class="slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <span class="s-label">🎵 背景音乐</span>
+            <label class="toggle-sw"><input type="checkbox" id="musicToggle2" onchange="toggleMusicUI()" checked><span class="slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <span class="s-label">🔊 音效</span>
+            <label class="toggle-sw"><input type="checkbox" id="sfxToggle2" onchange="toggleSfxUI()" checked><span class="slider"></span></label>
+          </div>
+          <div class="setting-row">
+            <span class="s-label">💻 电脑版</span>
+            <label class="toggle-sw"><input type="checkbox" id="layoutToggle2" onchange="toggleLayout()"><span class="slider"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="card collapse-card collapsed" id="syncCard">
+        <div class="card-header" onclick="toggleCollapseCard('syncCard')">☁ 云端同步配置 <span class="sync-dot-inline" id="syncDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--text3);margin-left:6px;flex-shrink:0"></span><span style="font-size:0.7rem;color:var(--text3);margin-left:auto" class="collapse-arrow">▶</span></div>
+        <div class="card-body"><div style="height:1px"></div>
           <div class="sync-section">
             <h4>🐙 GitHub 同步</h4>
             <div class="sync-row"><label>Token</label><input class="sync-input" id="ghToken" placeholder="ghp_xxx..."></div>
@@ -518,7 +591,6 @@ B. 选项
             </label>
           </div>
           <div style="display:flex;align-items:center;gap:8px;margin:10px 0;font-size:0.82rem">
-            <span class="sync-dot" id="syncDot"></span>
             <span id="syncText" style="color:var(--text2)">未配置同步</span>
           </div>
           <div style="display:flex;gap:6px;margin-top:12px">
@@ -527,7 +599,7 @@ B. 选项
             <button class="btn btn-outline btn-sm" onclick="saveSyncConfig()" style="flex:1">💾 保存</button>
           </div>
           <div style="font-size:0.76rem;color:var(--text3);margin-top:10px;line-height:1.5">
-            💡 手机端打开同一页面，配置相同仓库即可同步。先创建仓库并生成访问令牌。
+            💡 手机端打开同一页面，配置相同仓库即可同步。
           </div>
         </div>
       </div>
@@ -586,8 +658,8 @@ B. 选项
   <button class="nav-item" data-tab="quiz" onclick="switchMainTab('quiz')">
     <span class="nav-icon">📝</span><span class="nav-label">刷题</span>
   </button>
-  <button class="nav-item" data-tab="sync" onclick="switchMainTab('sync')">
-    <span class="nav-icon">☁</span><span class="nav-label">同步</span>
+  <button class="nav-item" data-tab="settings" onclick="switchMainTab('settings')">
+    <span class="nav-icon">⚙</span><span class="nav-label">设置</span>
   </button>
 </div>
 
@@ -608,12 +680,22 @@ window.switchMainTab = function(tab){
   if(ni)ni.classList.add('active');
 };
 
+// ==================== COLLAPSE CARD ====================
+window.toggleCollapseCard = function(cardId){
+  const card = document.getElementById(cardId);
+  if(!card)return;
+  const collapsed = card.classList.toggle('collapsed');
+  const arrow = card.querySelector('.collapse-arrow');
+  if(arrow)arrow.textContent = collapsed ? '▶' : '▼';
+};
+
 // ==================== SYNC (defined early for onclick handlers) ====================
 window.syncPush = async function(){
   const cfg=A.syncCfg;
   const dot=document.getElementById('syncDot');
-  dot.className='sync-dot syncing';
-  document.getElementById('syncText').textContent='同步中...';
+  if(dot){dot.style.background='var(--purple)';dot.style.animation='syncPulse 0.8s infinite'};
+  const txt=document.getElementById('syncText');
+  if(txt)txt.textContent='同步中...';
   const json=JSON.stringify(A);
   const b64=btoa(unescape(encodeURIComponent(json)));
   let ok=0;
@@ -636,7 +718,6 @@ window.syncPush = async function(){
       const [owner,repo]=cfg.geeRepo.split('/');
       let sha='';
       try{const r=await fetch(`https://gitee.com/api/v5/repos/${owner}/${repo}/contents/${cfg.geePath}?access_token=${cfg.geeToken}`);if(r.ok){const d=await r.json();sha=d.sha}}catch(e){}
-      // Gitee: POST for new file, PUT for update
       const method=sha?'PUT':'POST';
       const body={access_token:cfg.geeToken,message:`更新数据 ${T()}`,content:b64};
       if(sha) body.sha=sha;
@@ -648,8 +729,8 @@ window.syncPush = async function(){
     }catch(e){console.error('Gitee push:',e)}
   }
 
-  dot.className='sync-dot'+(ok>0?' ok':'');
-  document.getElementById('syncText').textContent=ok>0?'同步成功 ✓':'同步失败';
+  if(dot){dot.style.animation='';dot.style.background=ok>0?'#2da44e':'var(--text3)'};
+  if(txt)txt.textContent=ok>0?'同步成功 ✓':'同步失败';
   toast(ok>0?`已推送到 ${ok} 个平台`:'推送失败，请检查配置');
 };
 
@@ -673,8 +754,10 @@ window.syncPull = async function(silent){
   if(data){
     Object.keys(DEF()).forEach(k=>{if(k in data)A[k]=data[k]});
     save();renderNoteList();newNote();updateTimerPanel();updateDashboard();
-    document.getElementById('syncDot').className='sync-dot ok';
-    document.getElementById('syncText').textContent='拉取成功 ✓';
+    const dot=document.getElementById('syncDot');
+    if(dot)dot.style.background='#2da44e';
+    const txt=document.getElementById('syncText');
+    if(txt)txt.textContent='拉取成功 ✓';
     toast('数据已从云端拉取 ✓');
   }else if(!silent){toast('拉取失败，请检查配置')}
 };
@@ -1066,7 +1149,7 @@ function renderQuizCard(q, index) {
   const btnDiv = document.createElement('div');
   btnDiv.style.marginTop = '8px';
   const checkBtn = document.createElement('button');
-  checkBtn.className = 'btn btn-outline btn-sm';
+  checkBtn.className = 'quiz-check-btn';
   checkBtn.textContent = '✅ 检查答案';
   checkBtn.addEventListener('click', () => {
     const userAns = card._getAnswer();
@@ -1085,8 +1168,8 @@ function renderQuizCard(q, index) {
       }
       feedbackDiv.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'wrong');
       feedbackDiv.innerHTML = isCorrect
-        ? '✔ 正确！'
-        : `✘ 错误，正确答案：<strong>${esc(correct)}</strong>${q.analysis ? '<br><small>' + esc(q.analysis) + '</small>' : ''}`;
+        ? `✔ 正确！${q.analysis ? '<br><small>📖 ' + esc(q.analysis) + '</small>' : ''}`
+        : `✘ 错误，正确答案：<strong>${esc(correct)}</strong>${q.analysis ? '<br><small>📖 ' + esc(q.analysis) + '</small>' : ''}`;
     }
     // Record attempt
     recordQuizAttempt(q.id, isCorrect);
@@ -1245,6 +1328,9 @@ window.selectBank = function(bankId) {
   currentQuizBankId = bankId;
   const bank = A.quizBanks.find(b => b.id === bankId);
   if (!bank) return;
+  // Expand bank card if collapsed
+  const bankCard = document.getElementById('quizBankCard');
+  if(bankCard && bankCard.classList.contains('collapsed')) toggleCollapseCard('quizBankCard');
   const container = document.getElementById('quizMainContainer');
   container.innerHTML = '<h4 style="margin-bottom:10px;color:var(--purple)">📋 ' + esc(bank.name) + '（共' + bank.questions.length + '题）' +
     '<span style="font-size:0.72rem;color:var(--text3);margin-left:8px">正确率: ' + (bank.stats.accuracy || 0) + '%</span></h4>';
@@ -1551,7 +1637,7 @@ function applyPCLayout(){
   if(btn) btn.textContent=on?'📱':'💻';
   const cityCard=document.getElementById('cityMapCard');
   const timerInner=document.getElementById('panel-timer')?.querySelector('.inner');
-  const syncCard=document.getElementById('panel-sync')?.querySelector('.card');
+  const syncCard=document.getElementById('syncCard');
   const notesInner=document.getElementById('panel-notes')?.querySelector('.inner');
   if(on){
     document.querySelectorAll('.main-panel').forEach(p=>p.classList.add('active'));
@@ -1564,9 +1650,9 @@ function applyPCLayout(){
     const cur=document.querySelector('.nav-item.active');
     if(cur){ const tab=cur.dataset.tab; document.getElementById('panel-'+tab).classList.add('active'); }
     if(cityCard&&timerInner) timerInner.appendChild(cityCard);
-    // Restore sync card to sync panel
-    const syncInner=document.getElementById('panel-sync')?.querySelector('.inner');
-    if(syncCard&&syncInner) syncInner.appendChild(syncCard);
+    // Restore sync card to settings panel
+    const settingsInner=document.getElementById('panel-settings')?.querySelector('.inner');
+    if(syncCard&&settingsInner) settingsInner.appendChild(syncCard);
   }
   setTimeout(()=>{drawCityMap();renderPieChart();renderCityChart();updateTimerPanel()},150);
 }
@@ -2202,25 +2288,9 @@ function loadSyncConfig(){
   ['ghToken','ghRepo','ghPath','geeToken','geeRepo','geePath'].forEach(k=>{
     const el=document.getElementById(k);if(el)el.value=A.syncCfg[k]||'';
   });
-  document.getElementById('autoSync').checked=!!A.syncCfg.autoSync;
-  // Restore collapsed state
-  if(A.syncCfg._collapsed){
-    const card=document.getElementById('syncCardBody')?.closest('.card');
-    const arrow=document.getElementById('syncCollapseArrow');
-    if(card)card.classList.add('sync-collapsed');
-    if(arrow)arrow.textContent='▶';
-  }
+  const as = document.getElementById('autoSync');
+  if(as) as.checked = !!A.syncCfg.autoSync;
 }
-
-window.toggleSyncCollapse = function(){
-  const card=document.getElementById('syncCardBody')?.closest('.card');
-  const arrow=document.getElementById('syncCollapseArrow');
-  if(!card)return;
-  const collapsed=card.classList.toggle('sync-collapsed');
-  if(arrow)arrow.textContent=collapsed?'▶':'▼';
-  A.syncCfg._collapsed=collapsed;
-  save();
-};
 
 window.saveSyncConfig = function(){
   A.syncCfg.ghToken=document.getElementById('ghToken').value.trim();
@@ -2237,9 +2307,8 @@ function updateSyncStatus(){
   const dot=document.getElementById('syncDot');
   const text=document.getElementById('syncText');
   const cfg=A.syncCfg;
-  dot.className='sync-dot';
-  if(cfg.ghToken||cfg.geeToken){dot.classList.add('ok');text.textContent='已配置 · '+(cfg.autoSync?'自动同步':'手动同步')}
-  else {text.textContent='未配置同步'}
+  if(dot)dot.style.background=(cfg.ghToken||cfg.geeToken)?'#2da44e':'var(--text3)';
+  if(text)text.textContent=(cfg.ghToken||cfg.geeToken)?'已配置 · '+(cfg.autoSync?'自动同步':'手动同步'):'未配置同步';
 }
 
 // ==================== DASHBOARD ====================
@@ -2489,83 +2558,155 @@ window.switchMainTab = function(tab){
     }
   }
   if(tab==='dashboard'){updateDashboard();renderPhysics();updateEdu();updateEnglish()}
-  if(tab==='sync')loadSyncConfig();
+  if(tab==='settings'){initSettingsUI();loadSyncConfig();updateSyncStatus()}
   if(tab==='notes'){renderNoteList();if(!curNoteId&&A.notes.length>0)openNote(A.notes[0].id)}
   if(tab==='quiz'){renderQuizBanks();renderBankSelect()}
 };
 
 // ==================== SETTINGS ====================
 let zoomLevel = A.settings.zoom||1.0;
-const ZOOM_MIN=0.7, ZOOM_MAX=1.6, ZOOM_STEP=0.03;
+const FONT_SIZES = ['small','medium','large'];
+const FONT_LABELS = ['小','标准','大'];
+const DENSITY_NAMES = ['compact','normal','comfortable'];
+const DENSITY_LABELS = ['紧凑','标准','宽松'];
+const BASE_SIZES = {small:17, medium:20, large:23};
 
 function applyZoom(){
-  const baseSizes={small:17,medium:20,large:23};
-  const fs=A.settings.fontSize||'medium';
-  const base=baseSizes[fs]||20;
+  const base=BASE_SIZES[A.settings.fontSize||'medium']||20;
   document.body.style.fontSize=(base*zoomLevel)+'px';
   A.settings.zoom=zoomLevel;save();
-  const lbl=document.getElementById('zoomLabel');
-  if(lbl)lbl.textContent=Math.round(zoomLevel*100)+'%';
 }
-window.zoomIn = function(){
-  zoomLevel=Math.min(ZOOM_MAX,zoomLevel+ZOOM_STEP);
-  applyZoom();toast('🔍 '+Math.round(zoomLevel*100)+'%');
-};
-window.zoomOut = function(){
-  zoomLevel=Math.max(ZOOM_MIN,zoomLevel-ZOOM_STEP);
-  applyZoom();toast('🔍 '+Math.round(zoomLevel*100)+'%');
-};
-window.resetZoom = function(){
-  zoomLevel=1.0;applyZoom();
-  toast('🔍 缩放已重置为 100%');
+
+function applyDensity(){
+  document.body.className = document.body.className.replace(/density-\w+/g,'').trim();
+  document.body.classList.add('density-'+(A.settings.density||'normal'));
+  save();
+}
+
+window.initSettingsUI = function(){
+  const fs = A.settings.fontSize||'medium';
+  const fi = FONT_SIZES.indexOf(fs);
+  const fsSlider = document.getElementById('fontSizeSlider');
+  if(fsSlider){ fsSlider.value = fi>=0 ? fi : 1; document.getElementById('fontSizeVal').textContent = FONT_LABELS[fi>=0?fi:1]; }
+
+  const zSlider = document.getElementById('zoomSlider');
+  if(zSlider){ zSlider.value = Math.round(zoomLevel*100); document.getElementById('zoomVal').textContent = Math.round(zoomLevel*100)+'%'; }
+
+  const d = A.settings.density||'normal';
+  const di = DENSITY_NAMES.indexOf(d);
+  const dSlider = document.getElementById('densitySlider');
+  if(dSlider){ dSlider.value = di>=0 ? di : 1; document.getElementById('densityVal').textContent = DENSITY_LABELS[di>=0?di:1]; }
+
+  // Toggles
+  const g2 = document.getElementById('glassToggle2');
+  if(g2) g2.checked = !!A.settings.glass;
+  const m2 = document.getElementById('musicToggle2');
+  if(m2) m2.checked = Sound._on;
+  const s2 = document.getElementById('sfxToggle2');
+  if(s2) s2.checked = Sound._sfxOn;
+  const l2 = document.getElementById('layoutToggle2');
+  if(l2) l2.checked = !!A.settings.pcLayout;
 };
 
-window.applySettings = function(){
-  const fsEl=document.getElementById('fontSizeSel');
-  const densityEl=document.getElementById('densitySel');
-  if(!fsEl||!densityEl) return;
-  const fs=fsEl.value;
-  const density=densityEl.value;
-  document.body.className='fs-'+fs+' density-'+density;
-  A.settings.fontSize=fs;A.settings.density=density;
+window.onFontSizeSlide = function(v){
+  const i = parseInt(v);
+  A.settings.fontSize = FONT_SIZES[i];
+  document.getElementById('fontSizeVal').textContent = FONT_LABELS[i];
   applyZoom();
-  if(document.getElementById('panel-timer').classList.contains('active')){
-    setTimeout(()=>{renderPieChart();renderCityChart();drawCityMap()},100);
-  }
 };
 
-// Alt + 滚轮缩放 (capture phase on window)
+window.onZoomSlide = function(v){
+  zoomLevel = parseInt(v)/100;
+  document.getElementById('zoomVal').textContent = v+'%';
+  applyZoom();
+};
+
+window.onDensitySlide = function(v){
+  const i = parseInt(v);
+  A.settings.density = DENSITY_NAMES[i];
+  document.getElementById('densityVal').textContent = DENSITY_LABELS[i];
+  applyDensity();
+};
+
+// Update toggleUI functions to sync both toggle instances
+const _origToggleGlass = window.toggleGlass;
+window.toggleGlass = function(){
+  A.settings.glass=!A.settings.glass;
+  document.body.classList.toggle('glass',A.settings.glass);
+  const topBtn = document.getElementById('glassToggle');
+  if(topBtn) topBtn.textContent = A.settings.glass?'🔳':'🔲';
+  const g2 = document.getElementById('glassToggle2');
+  if(g2) g2.checked = A.settings.glass;
+  save();toast(A.settings.glass?'毛玻璃 开 ✓':'毛玻璃 关');
+};
+
+const _origToggleMusic = window.toggleMusicUI;
+window.toggleMusicUI = function(){
+  const on = Sound.toggleMusic();
+  const topBtn = document.getElementById('musicToggle');
+  if(topBtn){ topBtn.textContent = on?'🎵':'🎵'; topBtn.style.opacity = on?'1':'0.4'; }
+  const m2 = document.getElementById('musicToggle2');
+  if(m2) m2.checked = on;
+  toast(on?'背景音乐 开 ♪':'背景音乐 关');
+};
+
+const _origToggleSfx = window.toggleSfxUI;
+window.toggleSfxUI = function(){
+  const on = Sound.toggleSfx();
+  const topBtn = document.getElementById('sfxToggle');
+  if(topBtn){ topBtn.textContent = on?'🔊':'🔇'; topBtn.style.opacity = on?'1':'0.4'; }
+  const s2 = document.getElementById('sfxToggle2');
+  if(s2) s2.checked = on;
+  toast(on?'音效 开':'音效 关');
+};
+
+const _origToggleLayout = window.toggleLayout;
+window.toggleLayout = function(){
+  A.settings.pcLayout=!A.settings.pcLayout;
+  applyPCLayout();
+  save();
+  const l2 = document.getElementById('layoutToggle2');
+  if(l2) l2.checked = !!A.settings.pcLayout;
+  toast(A.settings.pcLayout?'电脑版 🖥':'手机版 📱');
+};
+
+// Alt + 滚轮缩放
 window.addEventListener('wheel',function(e){
   if(!e.altKey) return;
-  e.preventDefault();
-  e.stopPropagation();
-  const prev=zoomLevel;
-  zoomLevel=Math.round((zoomLevel+(e.deltaY<0?ZOOM_STEP:-ZOOM_STEP))/ZOOM_STEP)*ZOOM_STEP;
-  zoomLevel=Math.max(ZOOM_MIN,Math.min(ZOOM_MAX,zoomLevel));
-  if(zoomLevel!==prev){applyZoom();toast('🔍 '+Math.round(zoomLevel*100)+'%')}
+  e.preventDefault(); e.stopPropagation();
+  const prev = Math.round(zoomLevel*100);
+  const step = e.deltaY<0 ? 5 : -5;
+  const next = Math.max(70, Math.min(160, prev+step));
+  zoomLevel = next/100;
+  applyZoom();
+  const zSlider = document.getElementById('zoomSlider');
+  if(zSlider) zSlider.value = next;
+  document.getElementById('zoomVal').textContent = next+'%';
+  toast('🔍 '+next+'%');
 },{capture:true,passive:false});
 
-// 重置缩放 (双击顶栏Logo)
 document.querySelector('.topbar-logo').addEventListener('dblclick',function(){
-  resetZoom();
+  zoomLevel=1.0; applyZoom();
+  const zSlider = document.getElementById('zoomSlider');
+  if(zSlider) zSlider.value = 100;
+  document.getElementById('zoomVal').textContent = '100%';
+  toast('🔍 缩放已重置');
 });
 
 // ==================== INIT ====================
 function init(){
-  // Apply saved settings
   const s=A.settings;
-  if(document.getElementById('fontSizeSel'))document.getElementById('fontSizeSel').value=s.fontSize||'medium';
-  if(document.getElementById('densitySel'))document.getElementById('densitySel').value=s.density||'normal';
-  applySettings();
-    if(s.zoom)applyZoom();
+  if(s.zoom)zoomLevel=s.zoom;
+  applyZoom();
+  applyDensity();
   if(s.glass){document.body.classList.add('glass');document.getElementById('glassToggle').textContent='🔳'}
   if(s.pcLayout){applyPCLayout();}
   Sound._on=s.music!==false;Sound._sfxOn=s.sfx!==false;
   document.getElementById('musicToggle').style.opacity=Sound._on?'1':'0.4';
   document.getElementById('sfxToggle').textContent=Sound._sfxOn?'🔊':'🔇';
   document.getElementById('sfxToggle').style.opacity=Sound._sfxOn?'1':'0.4';
+  initSettingsUI();
   updateSubjectUI();
-  // Chip click delegation (safe, no inline JS with interpolated strings)
   const chipsContainer=document.getElementById('customSubjectChips');
   if(chipsContainer){
     chipsContainer.addEventListener('click',onChipClick);
@@ -2576,7 +2717,6 @@ function init(){
   renderNoteList();renderQuizBanks();loadSyncConfig();updateSyncStatus();
   document.getElementById('noteTimestamp').textContent = TS().replace('T',' ').slice(0,19);
   if(A.notes.length>0) openNote(A.notes[0].id);
-  // First-visit PWA install guide (once)
   if(!A.settings._pwaGuideShown){
     A.settings._pwaGuideShown=true;save();
     setTimeout(()=>toast('📲 点顶栏 📲 按钮可安装到手机主屏幕'),1500);
