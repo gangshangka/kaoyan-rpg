@@ -265,6 +265,10 @@ body.density-comfortable .quiz-card-q{padding:18px 20px;margin-bottom:14px}
 .quiz-option input{margin-right:8px;accent-color:var(--purple)}
 .quiz-check-btn{width:100%;padding:8px 0;margin-top:8px;border:1.5px solid var(--purple2);border-radius:8px;background:var(--purple4);color:var(--purple);font-family:var(--font);font-size:0.82rem;font-weight:600;cursor:pointer;transition:all .15s}
 .quiz-check-btn:active{background:var(--purple3)}
+.quiz-mini-btn{font-size:0.68rem;padding:2px 8px;border:1px solid var(--border2);border-radius:10px;background:transparent;color:var(--purple);cursor:pointer;transition:all .12s;font-family:var(--font)}
+.quiz-mini-btn:active{background:var(--purple4)}
+.quiz-note-input:focus{border-color:var(--purple2)!important}
+.quiz-ai-feedback{word-break:break-word}
 .quiz-feedback{margin-top:8px;font-size:0.82rem;padding:8px 10px;border-radius:8px;background:var(--surface2);display:none;line-height:1.5}
 .quiz-feedback.correct{background:#f0fdf4;color:#166534;display:block}
 .quiz-feedback.wrong{background:#fef2f2;color:#991b1b;display:block}
@@ -500,6 +504,8 @@ B. 选项
       <div id="quizMainContainer"></div>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="quizActionBar" hidden>
         <button class="btn btn-outline btn-sm" onclick="checkAllAnswers()">✅ 检查全部</button>
+        <button class="btn btn-outline btn-sm" onclick="exportForAI()">📤 导出答题(AI)</button>
+        <button class="btn btn-outline btn-sm" onclick="importAIFeedback()">📥 导入AI评价</button>
         <button class="btn btn-outline btn-sm" onclick="exportQuizBank()">⬇ 导出题库</button>
         <button class="btn btn-outline btn-sm" style="color:var(--coral);border-color:var(--coral2)" onclick="resetQuizProgress()">↺ 重置进度</button>
       </div>
@@ -1162,41 +1168,91 @@ function renderQuizCard(q, index) {
         ? `✔ 正确！${q.analysis ? '<br><small>📖 ' + esc(q.analysis) + '</small>' : ''}`
         : `✘ 错误，正确答案：<strong>${esc(correct)}</strong>${q.analysis ? '<br><small>📖 ' + esc(q.analysis) + '</small>' : ''}`;
     }
-    // Record attempt
-    recordQuizAttempt(q.id, isCorrect);
+    // Record attempt with actual answer
+    recordQuizAttempt(q.id, userAns, isCorrect);
     saveQuizProgress();
+    // Refresh the card footer to show updated notes if any
+    refreshCardFooter(card, q.id);
   });
   btnDiv.appendChild(checkBtn);
   card.appendChild(btnDiv);
 
+  // Footer: notes, AI feedback, edit, timestamp
+  const footerDiv = document.createElement('div');
+  footerDiv.className = 'quiz-card-footer';
+  footerDiv.style.cssText = 'margin-top:10px;padding-top:8px;border-top:1px solid var(--border2);font-size:0.75rem;color:var(--text3)';
+  card.appendChild(footerDiv);
+
   card._data = q;
   card._check = (silent) => { checkBtn.click(); };
+  card._footer = footerDiv;
   return card;
 }
 
-function recordQuizAttempt(qid, isCorrect) {
+function refreshCardFooter(card, qid) {
+  const p = getProgress(currentQuizBankId, qid);
+  const footer = card._footer;
+  if (!footer) return;
+  const q = card._data;
+  let html = '';
+
+  // Timestamp
+  if (p && p.ts) {
+    html += `<span style="font-size:0.68rem">🕐 ${p.ts.replace('T',' ').slice(0,16)}</span> `;
+  }
+
+  // Edit question button
+  html += `<button class="quiz-mini-btn" onclick="event.stopPropagation();editQuestion('${q.id}')" title="编辑题目">✎ 编辑</button>`;
+
+  // User notes
+  const notes = p ? (p.notes||'') : '';
+  html += `<div style="margin-top:4px"><input class="quiz-note-input" id="qnote_${q.id}" placeholder="📝 添加笔记..." value="${esc(notes)}" onchange="saveQuestionNote('${q.id}', this.value)" style="width:100%;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;font-size:0.75rem;font-family:var(--font);outline:none;background:var(--surface)"></div>`;
+
+  // AI feedback
+  const ai = p ? (p.aiFeedback||'') : '';
+  if (ai) {
+    html += `<div class="quiz-ai-feedback" style="margin-top:4px;padding:6px 8px;background:#fefce8;border-radius:6px;border-left:3px solid #eab308;font-size:0.73rem;line-height:1.4">🤖 AI评价${p.aiScore?' ('+esc(p.aiScore)+')':''}：<br>${esc(ai).replace(/\n/g,'<br>')}</div>`;
+  }
+
+  footer.innerHTML = html;
+}
+
+// Helper: normalize progress entry (backward compat)
+function getProgress(bankId, qid) {
+  const raw = (A.quizProgress[bankId]||{})[qid];
+  if (!raw) return null;
+  if (typeof raw === 'string') return {status:raw, answer:'', ts:'', notes:'', aiFeedback:'', aiScore:''};
+  return raw;
+}
+
+function recordQuizAttempt(qid, userAnswer, isCorrect) {
   const bank = A.quizBanks.find(b => b.id === currentQuizBankId);
   if (!bank) return;
   if (!A.quizProgress[currentQuizBankId]) A.quizProgress[currentQuizBankId] = {};
-  const prev = A.quizProgress[currentQuizBankId][qid];
-  const nowCorrect = isCorrect;
-  const prevCorrect = prev === 'correct';
-  A.quizProgress[currentQuizBankId][qid] = nowCorrect ? 'correct' : 'wrong';
-  // Score only if first time getting correct
-  if (nowCorrect && !prevCorrect) {
+  const prev = getProgress(currentQuizBankId, qid);
+  const prevCorrect = prev && prev.status === 'correct';
+  A.quizProgress[currentQuizBankId][qid] = {
+    status: isCorrect ? 'correct' : 'wrong',
+    answer: userAnswer,
+    ts: TS(),
+    notes: prev ? (prev.notes||'') : '',
+    aiFeedback: prev ? (prev.aiFeedback||'') : '',
+    aiScore: prev ? (prev.aiScore||'') : ''
+  };
+  if (isCorrect && !prevCorrect) {
     addScore(3, '答题正确 · ' + (bank.name || '题库'));
   }
-  // Update bank stats
   recalcBankStats(bank);
   save();
 }
 
 function recalcBankStats(bank) {
-  const prog = A.quizProgress[bank.id] || {};
   let correct = 0, attempted = 0;
   bank.questions.forEach(q => {
-    if (prog[q.id] === 'correct') { correct++; attempted++; }
-    else if (prog[q.id] === 'wrong') attempted++;
+    const p = getProgress(bank.id, q.id);
+    if (!p) return;
+    if (p.status === 'correct') { correct++; attempted++; }
+    else if (p.status === 'wrong') attempted++;
   });
   bank.stats = { correct, attempted, total: bank.questions.length, accuracy: attempted > 0 ? Math.round(correct / attempted * 100) : 0 };
 }
@@ -1339,30 +1395,36 @@ window.selectBank = function(bankId) {
 
 function restoreQuizProgress() {
   if (!currentQuizBankId) return;
-  const prog = A.quizProgress[currentQuizBankId];
-  if (!prog) return;
   currentQuizCards.forEach(card => {
     const qid = card.dataset.qid;
-    const state = prog[qid];
-    if (!state) return;
+    const p = getProgress(currentQuizBankId, qid);
+    if (!p) return;
+    // Restore answer if available
     const inputs = card.querySelectorAll('input, textarea');
-    if (!inputs.length) return;
-    // For radio/checkbox, we need the answer value stored... but we only store correct/wrong
-    // So we can only restore feedback but not re-select
-    // For now, show feedback if previously attempted
-    if (state === 'correct' || state === 'wrong') {
+    if (p.answer && inputs.length) {
+      if (inputs.length === 1 && (inputs[0].tagName === 'TEXTAREA' || inputs[0].type === 'text')) {
+        inputs[0].value = p.answer;
+      } else {
+        // Radio/checkbox
+        const answers = p.answer.split(',').map(a => a.trim());
+        inputs.forEach(inp => {
+          inp.checked = answers.includes(inp.value);
+        });
+      }
+    }
+    // Show feedback
+    if (p.status === 'correct' || p.status === 'wrong') {
       const fb = card.querySelector('.quiz-feedback');
-      if (fb && state === 'correct') {
-        fb.className = 'quiz-feedback correct';
-        fb.innerHTML = '✔ 已掌握（之前答题正确）';
-        fb.style.display = 'block';
-      } else if (fb && state === 'wrong') {
-        fb.className = 'quiz-feedback wrong';
-        const correct = (card._data || {}).answer || '';
-        fb.innerHTML = '✘ 上次错误，正确答案：<strong>' + esc(correct) + '</strong>';
+      if (fb) {
+        fb.className = 'quiz-feedback ' + (p.status === 'correct' ? 'correct' : 'wrong');
+        fb.innerHTML = p.status === 'correct'
+          ? '✔ 已掌握（之前答题正确）'
+          : '✘ 上次错误，正确答案：<strong>' + esc((card._data||{}).answer||'') + '</strong>';
         fb.style.display = 'block';
       }
     }
+    // Refresh footer (notes, AI, timestamp)
+    refreshCardFooter(card, qid);
   });
 }
 
@@ -1378,6 +1440,202 @@ window.onBankSelect = function() {
   const id = sel.value;
   if (id) selectBank(id);
   else { clearCurrentQuiz(); }
+};
+
+// ==================== EXPORT FOR AI ====================
+window.exportForAI = function() {
+  if (!currentQuizBankId) return toast('请先选择题库');
+  const bank = A.quizBanks.find(b => b.id === currentQuizBankId);
+  if (!bank) return;
+  let out = '═══ 答题记录导出 ═══\n题库：' + bank.name + '\n导出时间：' + TS().replace('T',' ').slice(0,19) + '\n\n';
+  bank.questions.forEach((q, i) => {
+    const p = getProgress(currentQuizBankId, q.id);
+    out += '【题目' + (i+1) + '】' + q.type + '\n';
+    out += '题干：' + q.stem + '\n';
+    if (q.options && q.options.length) {
+      q.options.forEach(o => { out += o.label + '. ' + o.text + '\n'; });
+    }
+    out += '我的答案：' + (p ? (p.answer||'(未作答)') : '(未作答)') + '\n';
+    out += '正确答案：' + q.answer + '\n';
+    if (q.analysis) out += '解析：' + q.analysis + '\n';
+    if (p && p.notes) out += '笔记：' + p.notes + '\n';
+    out += '\n---\n\n';
+  });
+  // Copy to clipboard
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(out).then(() => toast('已复制到剪贴板 ✓')).catch(() => showExportModal(out));
+  } else {
+    showExportModal(out);
+  }
+};
+
+function showExportModal(text) {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center';
+  modal.innerHTML = `<div style="background:var(--surface);border-radius:var(--radius);padding:16px;width:94%;max-width:500px;max-height:80vh;display:flex;flex-direction:column">
+    <div style="font-weight:700;margin-bottom:8px">📤 导出答题记录（发送给AI）</div>
+    <textarea readonly style="flex:1;min-height:260px;font-size:0.78rem;font-family:var(--mono);padding:8px;border:1px solid var(--border);border-radius:8px;resize:vertical">${esc(text)}</textarea>
+    <div style="display:flex;gap:6px;margin-top:8px">
+      <button class="btn btn-primary btn-sm" style="flex:1" onclick="navigator.clipboard.writeText(this.parentElement.parentElement.querySelector('textarea').value);toast('已复制 ✓')">📋 复制</button>
+      <button class="btn btn-outline btn-sm" style="flex:1" onclick="this.closest('[style*=fixed]').remove()">关闭</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e){if(e.target===modal)modal.remove()});
+  // Auto-select
+  setTimeout(()=>{const ta=modal.querySelector('textarea');if(ta){ta.focus();ta.select()}},100);
+}
+
+// ==================== IMPORT AI FEEDBACK ====================
+window.importAIFeedback = function() {
+  if (!currentQuizBankId) return toast('请先选择题库');
+  const bank = A.quizBanks.find(b => b.id === currentQuizBankId);
+  if (!bank) return;
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center';
+  modal.innerHTML = `<div style="background:var(--surface);border-radius:var(--radius);padding:16px;width:94%;max-width:500px;max-height:80vh;display:flex;flex-direction:column">
+    <div style="font-weight:700;margin-bottom:4px">📥 导入AI评价</div>
+    <div style="font-size:0.72rem;color:var(--text3);margin-bottom:8px">粘贴AI返回的评价，格式：<br>【题目N】评分：xxx / 评语：xxx<br>或：题N - 正确/错误 - 评语</div>
+    <textarea id="aiFeedbackInput" placeholder="在此粘贴AI评价..." style="flex:1;min-height:200px;font-size:0.78rem;padding:8px;border:1px solid var(--border);border-radius:8px;resize:vertical"></textarea>
+    <div style="display:flex;gap:6px;margin-top:8px">
+      <button class="btn btn-primary btn-sm" style="flex:1" id="btnParseAI">🔍 解析并保存</button>
+      <button class="btn btn-outline btn-sm" style="flex:1" onclick="this.closest('[style*=fixed]').remove()">关闭</button>
+    </div>
+    <div id="aiParseResult" style="font-size:0.75rem;margin-top:6px;color:var(--text2)"></div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e){if(e.target===modal)modal.remove()});
+
+  document.getElementById('btnParseAI').addEventListener('click', function(){
+    const raw = document.getElementById('aiFeedbackInput').value.trim();
+    if (!raw) return;
+    const result = parseAIFeedback(raw, bank);
+    document.getElementById('aiParseResult').innerHTML = result;
+    if (result.includes('成功')) {
+      save(); restoreQuizProgress();
+      if (A.syncCfg.autoSync) syncPush();
+      setTimeout(()=>modal.remove(), 1500);
+    }
+  });
+};
+
+function parseAIFeedback(text, bank) {
+  // Parse formats like:
+  // 【题目1】评分：正确 评语：...
+  // 题1 - 正确 - 评语
+  // 1. 正确，评语...
+  let count = 0;
+  const lines = text.split('\n');
+  let currentQIdx = -1;
+  let currentScore = '';
+  let currentFeedback = '';
+
+  function flush() {
+    if (currentQIdx >= 0 && currentQIdx < bank.questions.length) {
+      const q = bank.questions[currentQIdx];
+      if (!A.quizProgress[bank.id]) A.quizProgress[bank.id] = {};
+      const prev = getProgress(bank.id, q.id) || {status:'', answer:'', ts:'', notes:'', aiFeedback:'', aiScore:''};
+      A.quizProgress[bank.id][q.id] = {
+        ...prev,
+        aiFeedback: currentFeedback.trim(),
+        aiScore: currentScore
+      };
+      count++;
+    }
+    currentQIdx = -1; currentScore = ''; currentFeedback = '';
+  }
+
+  for (const line of lines) {
+    // Match: 【题目N】 or 题N or N.
+    let m = line.match(/【题目\s*(\d+)】/);
+    if (!m) m = line.match(/题\s*(\d+)[：:\-]/);
+    if (!m) m = line.match(/^(\d+)[\.、)\-]\s*/);
+    if (m) {
+      flush();
+      currentQIdx = parseInt(m[1]) - 1;
+      // Extract score
+      const scM = line.match(/评分[：:]\s*(.+?)(?:\s*[，,]\s*评语|$)/);
+      if (scM) currentScore = scM[1].trim();
+      const fbM = line.match(/评语[：:]\s*(.+)/);
+      if (fbM) currentFeedback = fbM[1].trim();
+      // Check for "正确/错误"
+      if (line.includes('正确') && !currentScore) currentScore = '正确';
+      if (line.includes('错误') && !currentScore) currentScore = '错误';
+    } else if (currentQIdx >= 0 && line.trim()) {
+      currentFeedback += (currentFeedback ? '\n' : '') + line.trim();
+    }
+  }
+  flush();
+
+  if (count === 0) return '❌ 未识别到题目评价，请检查格式';
+  return '✓ 成功导入 ' + count + ' 条AI评价';
+}
+
+// ==================== SAVE NOTES ====================
+window.saveQuestionNote = function(qid, value) {
+  if (!currentQuizBankId) return;
+  if (!A.quizProgress[currentQuizBankId]) A.quizProgress[currentQuizBankId] = {};
+  const prev = getProgress(currentQuizBankId, qid) || {status:'', answer:'', ts:'', notes:'', aiFeedback:'', aiScore:''};
+  A.quizProgress[currentQuizBankId][qid] = {...prev, notes: value.trim()};
+  save();
+};
+
+// ==================== EDIT QUESTION ====================
+window.editQuestion = function(qid) {
+  if (!currentQuizBankId) return;
+  const bank = A.quizBanks.find(b => b.id === currentQuizBankId);
+  if (!bank) return;
+  const q = bank.questions.find(q => q.id === qid);
+  if (!q) return;
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center';
+  modal.innerHTML = `<div style="background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;padding:20px 16px 24px;animation:slideUp .3s ease">
+    <div style="font-weight:700;margin-bottom:12px">✎ 编辑题目</div>
+    <div style="font-size:0.78rem;color:var(--text3);margin-bottom:4px">题型</div>
+    <input id="editQType" value="${esc(q.type)}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:0.82rem;margin-bottom:8px;font-family:var(--font);outline:none">
+    <div style="font-size:0.78rem;color:var(--text3);margin-bottom:4px">题干</div>
+    <textarea id="editQStem" rows="3" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:0.82rem;margin-bottom:8px;font-family:var(--font);outline:none;resize:vertical">${esc(q.stem)}</textarea>
+    <div style="font-size:0.78rem;color:var(--text3);margin-bottom:4px">选项（每行一个，格式：A. 选项内容）</div>
+    <textarea id="editQOpts" rows="4" placeholder="A. 选项A&#10;B. 选项B" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:0.82rem;margin-bottom:8px;font-family:var(--font);outline:none;resize:vertical">${(q.options||[]).map(o=>o.label+'. '+o.text).join('\n')}</textarea>
+    <div style="font-size:0.78rem;color:var(--text3);margin-bottom:4px">答案</div>
+    <input id="editQAnswer" value="${esc(q.answer)}" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:0.82rem;margin-bottom:8px;font-family:var(--font);outline:none">
+    <div style="font-size:0.78rem;color:var(--text3);margin-bottom:4px">解析</div>
+    <textarea id="editQAnalysis" rows="2" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:0.82rem;margin-bottom:12px;font-family:var(--font);outline:none;resize:vertical">${esc(q.analysis||'')}</textarea>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-primary btn-sm" style="flex:1" id="btnSaveEdit">💾 保存</button>
+      <button class="btn btn-outline btn-sm" style="flex:1;color:var(--coral);border-color:var(--coral2)" id="btnDeleteQ">🗑 删除此题</button>
+      <button class="btn btn-outline btn-sm" style="flex:1" onclick="this.closest('[style*=fixed]').remove()">关闭</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e){if(e.target===modal)modal.remove()});
+
+  document.getElementById('btnSaveEdit').addEventListener('click', function(){
+    q.type = document.getElementById('editQType').value.trim() || q.type;
+    q.stem = document.getElementById('editQStem').value.trim() || q.stem;
+    q.answer = document.getElementById('editQAnswer').value.trim() || q.answer;
+    q.analysis = document.getElementById('editQAnalysis').value.trim();
+    const optText = document.getElementById('editQOpts').value.trim();
+    if (optText) {
+      q.options = optText.split('\n').map(line => {
+        const m = line.match(/^([A-D])\.\s*(.+)/);
+        return m ? {label:m[1], text:m[2].trim()} : null;
+      }).filter(Boolean);
+    }
+    recalcBankStats(bank);
+    save(); selectBank(bank.id);
+    modal.remove();
+    toast('题目已更新 ✓');
+  });
+
+  document.getElementById('btnDeleteQ').addEventListener('click', function(){
+    if (!confirm('确认删除此题？')) return;
+    bank.questions = bank.questions.filter(qq => qq.id !== qid);
+    recalcBankStats(bank);
+    save(); selectBank(bank.id);
+    modal.remove();
+    toast('题目已删除');
+  });
 };
 
 function renderQuizBanks() {
@@ -2512,10 +2770,11 @@ function updateDashboard(){
   // Quiz stats
   let totalDone=0,totalCorrect=0,totalQ=0;
   A.quizBanks.forEach(b=>{
-    const prog=A.quizProgress[b.id]||{};
     b.questions.forEach(q=>{
-      if(prog[q.id]==='correct'){totalDone++;totalCorrect++}
-      else if(prog[q.id]==='wrong')totalDone++;
+      const p = getProgress(b.id, q.id);
+      if (!p) { totalQ++; return; }
+      if(p.status==='correct'){totalDone++;totalCorrect++}
+      else if(p.status==='wrong')totalDone++;
       totalQ++;
     });
   });
