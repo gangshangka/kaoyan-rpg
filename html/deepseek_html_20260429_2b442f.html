@@ -2106,7 +2106,7 @@ window.onBankSelect = function() {
 window.exportForAI = function() {
   if (!currentQuizBankId) return toast('请先选择题库');
   const bank = A.quizBanks.find(b => b.id === currentQuizBankId);
-  if (!bank) return;
+  if (!bank) return toast('题库不存在');
   let out = '═══ 答题记录导出 ═══\n题库：' + bank.name + '\n导出时间：' + TS().replace('T',' ').slice(0,19) + '\n\n';
   bank.questions.forEach((q, i) => {
     const p = getProgress(currentQuizBankId, q.id);
@@ -2121,12 +2121,7 @@ window.exportForAI = function() {
     if (p && p.notes) out += '笔记：' + p.notes + '\n';
     out += '\n---\n\n';
   });
-  // Copy to clipboard
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(out).then(() => toast('已复制到剪贴板 ✓')).catch(() => showExportModal(out));
-  } else {
-    showExportModal(out);
-  }
+  showExportModal(out);
 };
 
 function showExportModal(text) {
