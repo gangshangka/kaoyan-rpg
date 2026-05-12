@@ -1164,8 +1164,11 @@ function renderQuizCard(q, index) {
         isCorrect = userAns === correct;
       }
       feedbackDiv.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'wrong');
+      // Show previous wrong answer if applicable
+      const prevP = getProgress(currentQuizBankId, q.id);
+      const prevWrong = (prevP && prevP.prevAnswer) ? `<br><small style="color:var(--coral)">⚠ 上次错误答案：${esc(prevP.prevAnswer)}</small>` : '';
       feedbackDiv.innerHTML = isCorrect
-        ? `✔ 正确！${q.analysis ? '<br><small>📖 ' + esc(q.analysis) + '</small>' : ''}`
+        ? `✔ 正确！${prevWrong}${q.analysis ? '<br><small>📖 ' + esc(q.analysis) + '</small>' : ''}`
         : `✘ 错误，正确答案：<strong>${esc(correct)}</strong>${q.analysis ? '<br><small>📖 ' + esc(q.analysis) + '</small>' : ''}`;
     }
     // Record attempt with actual answer
@@ -1196,6 +1199,10 @@ function refreshCardFooter(card, qid) {
   const q = card._data;
   let html = '';
 
+  // Previous wrong answer
+  if (p && p.prevAnswer) {
+    html += `<div class="quiz-prev-wrong" style="font-size:0.72rem;color:var(--coral);margin-bottom:4px;padding:3px 6px;background:#fef2f2;border-radius:4px">✘ 上次错误答案：<strong>${esc(p.prevAnswer)}</strong></div>`;
+  }
   // Timestamp
   if (p && p.ts) {
     html += `<span style="font-size:0.68rem">🕐 ${p.ts.replace('T',' ').slice(0,16)}</span> `;
@@ -1231,9 +1238,15 @@ function recordQuizAttempt(qid, userAnswer, isCorrect) {
   if (!A.quizProgress[currentQuizBankId]) A.quizProgress[currentQuizBankId] = {};
   const prev = getProgress(currentQuizBankId, qid);
   const prevCorrect = prev && prev.status === 'correct';
+  // Preserve previous wrong answer
+  let prevAnswer = prev ? (prev.prevAnswer||'') : '';
+  if (!isCorrect && prev && prev.status === 'wrong' && prev.answer) {
+    prevAnswer = prev.answer; // Keep the previous wrong answer
+  }
   A.quizProgress[currentQuizBankId][qid] = {
     status: isCorrect ? 'correct' : 'wrong',
     answer: userAnswer,
+    prevAnswer: prevAnswer,
     ts: TS(),
     notes: prev ? (prev.notes||'') : '',
     aiFeedback: prev ? (prev.aiFeedback||'') : '',
