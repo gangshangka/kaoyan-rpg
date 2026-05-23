@@ -268,7 +268,12 @@ body.density-comfortable .quiz-card-q{padding:18px 20px;margin-bottom:14px}
 .quiz-card-q{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:20px 18px 14px;box-shadow:var(--shadow);position:relative;touch-action:pan-y;will-change:transform;z-index:1;font-size:calc(1rem * var(--quiz-scale))}
 .quiz-card-q .q-num{font-size:0.72rem;color:var(--text3);font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
 .quiz-card-q .q-num .q-type-tag{font-size:0.65rem;color:var(--purple);background:var(--purple4);padding:2px 7px;border-radius:8px;font-weight:600}
-.quiz-card-q .q-stem{font-weight:700;font-size:calc(1.5rem * var(--quiz-scale));margin-bottom:14px;color:var(--text);line-height:1.6}
+.quiz-card-q .q-stem{font-weight:700;font-size:calc(1.5rem * var(--quiz-scale));margin-bottom:14px;color:var(--text);line-height:1.6;user-select:text}
+.q-stem mark{background:#fef08a;border-radius:2px;padding:0 1px;cursor:pointer}
+.q-stem .hl-underline{text-decoration:underline;text-decoration-color:#6366f1;text-underline-offset:3px;cursor:pointer}
+.hl-toolbar{position:fixed;z-index:9999;background:#1e293b;color:#fff;border-radius:8px;padding:4px;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.3);font-size:13px;white-space:nowrap;width:fit-content}
+.hl-toolbar button{background:none;border:none;cursor:pointer;padding:5px 10px;border-radius:4px;font-size:13px;color:#fff}
+.hl-toolbar button:hover{background:#334155}
 .quiz-option{display:block;padding:12px 14px;margin:6px 0;border-radius:10px;border:1.5px solid var(--border2);background:var(--surface);cursor:pointer;font-size:calc(1.2rem * var(--quiz-scale));transition:all .15s;line-height:1.5}
 .quiz-option:active{background:var(--purple4);border-color:var(--purple2)}
 .quiz-option.selected{background:var(--purple4);border-color:var(--purple);box-shadow:0 0 0 1px var(--purple3)}
@@ -299,26 +304,6 @@ body.density-comfortable .quiz-card-q{padding:18px 20px;margin-bottom:14px}
 .quiz-focus-mode .quiz-card-q.focus-active .quiz-option{opacity:1}
 .quiz-focus-mode .quiz-card-q.focus-active .quiz-check-btn{opacity:1}
 .quiz-focus-mode .quiz-card-q.focus-active .quiz-card-footer{opacity:1}
-.quiz-immersive-bar{display:none}
-.quiz-immersive-icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid var(--border2);background:rgba(255,255,255,.9);color:var(--text2);font-size:0.9rem;display:flex;align-items:center;justify-content:center}
-body.quiz-immersive .bottom-nav{display:none}
-body.quiz-immersive #panel-quiz{padding:0;overflow:hidden;background:linear-gradient(180deg,#f8f6fa 0%,#f1ecf7 100%)}
-body.quiz-immersive #panel-quiz>.inner{padding:0;min-height:100%;display:flex;flex-direction:column}
-body.quiz-immersive #quizMapToggle,body.quiz-immersive #quizTrackCard,body.quiz-immersive #quizMapCard,body.quiz-immersive #quizActionBar{display:none!important}
-body.quiz-immersive .quiz-immersive-bar{display:flex;align-items:center;gap:8px;position:sticky;top:0;z-index:120;padding:8px 10px;background:rgba(255,255,255,.86);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--border2)}
-body.quiz-immersive #quizMainContainer{flex:1;min-height:0;overflow-y:auto;scroll-snap-type:y mandatory;padding:8px 10px calc(var(--safe-bottom) + 16px);-webkit-overflow-scrolling:touch}
-body.quiz-immersive #quizMainContainer>h4,body.quiz-immersive .quiz-card-marker{display:none}
-body.quiz-immersive .quiz-card-wrap{min-height:calc(100dvh - 58px - var(--safe-bottom));display:flex;align-items:stretch;margin:0 0 10px;scroll-snap-align:start;border-radius:18px;overflow:visible}
-body.quiz-immersive .quiz-card-q{width:100%;min-height:calc(100dvh - 78px - var(--safe-bottom));display:flex;flex-direction:column;padding:22px 16px 14px;border-radius:18px;border:1px solid rgba(255,255,255,.72);box-shadow:0 10px 28px rgba(60,40,90,.08)}
-body.quiz-immersive .quiz-card-q .q-num{margin-bottom:10px}
-body.quiz-immersive .quiz-card-q .q-stem{font-size:calc(1.34rem * var(--quiz-scale));line-height:1.7;margin-bottom:18px}
-body.quiz-immersive .quiz-option{padding:14px 14px;margin:8px 0;font-size:calc(1.08rem * var(--quiz-scale));line-height:1.55}
-body.quiz-immersive .quiz-check-btn{padding:14px 0;margin-top:16px;border-radius:12px}
-body.quiz-immersive .quiz-card-footer{margin-top:auto;border-top:none;padding-top:12px}
-body.quiz-immersive .quiz-card-tools{opacity:.72}
-body.quiz-immersive .quiz-feedback{max-height:none;overflow:visible}
-body.quiz-immersive .quiz-focus-mode .quiz-card-q,body.quiz-immersive .quiz-focus-mode .quiz-card-q.focus-active{background:var(--surface);border-color:rgba(255,255,255,.72);box-shadow:0 10px 28px rgba(60,40,90,.08)}
-body.quiz-immersive .quiz-focus-mode .quiz-card-q .q-stem,body.quiz-immersive .quiz-focus-mode .quiz-card-q .quiz-option,body.quiz-immersive .quiz-focus-mode .quiz-card-q .quiz-check-btn,body.quiz-immersive .quiz-focus-mode .quiz-card-q .quiz-card-footer{opacity:1}
 .quiz-bank-item{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius2);padding:12px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:all .12s}
 .quiz-bank-item:active,.quiz-bank-item.active{background:var(--purple4);border-color:var(--purple2)}
 .quiz-bank-item .bank-name{font-weight:700;font-size:1.05rem}
@@ -352,60 +337,77 @@ body.quiz-immersive .quiz-focus-mode .quiz-card-q .q-stem,body.quiz-immersive .q
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .city-modal-handle{width:36px;height:4px;border-radius:3px;background:var(--border);margin:0 auto 14px}
 
-/* Quiz Map */
-.quiz-map-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;padding:4px 0}
-.quiz-map-item{position:relative;background:linear-gradient(135deg,var(--surface),var(--surface2));border:2px solid var(--border2);border-radius:var(--radius);padding:14px 12px;cursor:pointer;transition:all .2s;overflow:hidden;text-align:center}
-.quiz-map-item:hover{transform:translateY(-2px);box-shadow:var(--shadow2);border-color:var(--purple2)}
-.quiz-map-item:active{transform:scale(.97)}
-.quiz-map-item .map-icon{font-size:1.8rem;margin-bottom:6px;display:block}
-.quiz-map-item .map-name{font-weight:700;font-size:0.85rem;color:var(--text);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.quiz-map-item .map-meta{font-size:0.68rem;color:var(--text3)}
-.quiz-map-item .map-progress{height:4px;border-radius:2px;background:var(--border2);margin-top:8px;overflow:hidden}
-.quiz-map-item .map-progress-fill{height:100%;border-radius:2px;transition:width .5s}
-.quiz-map-item.active{border-color:var(--purple);background:var(--purple4);box-shadow:0 0 0 2px var(--purple3)}
-.quiz-map-item.mastered{border-color:#22c55e;background:linear-gradient(135deg,#f0fdf4,#dcfce7)}
-.quiz-map-item.learning{border-color:#f59e0b;background:linear-gradient(135deg,#fffbeb,#fef3c7)}
-.quiz-map-item.new-item{border-color:var(--blue);background:linear-gradient(135deg,#eff6ff,#dbeafe)}
-.quiz-map-empty{text-align:center;padding:30px 20px;color:var(--text3)}
-.quiz-map-empty .icon{font-size:2.5rem;margin-bottom:8px;opacity:.6}
-.quiz-map-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:0.72rem}
-.quiz-map-legend-item{display:flex;align-items:center;gap:4px}
-.quiz-map-legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-.quiz-map-toggle{background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--radius);padding:10px 14px;margin-bottom:10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all .2s}
-.quiz-map-toggle:active{background:var(--purple4);border-color:var(--purple2)}
-.quiz-map-toggle .toggle-info{display:flex;align-items:center;gap:10px}
-.quiz-map-toggle .toggle-icon{font-size:1.3rem}
-.quiz-map-toggle .toggle-name{font-weight:700;font-size:0.95rem}
-.quiz-map-toggle .toggle-meta{font-size:0.75rem;color:var(--text3)}
-.quiz-map-toggle .toggle-arrow{font-size:0.8rem;color:var(--text3);transition:transform .2s}
-.quiz-map-toggle .toggle-arrow.expanded{transform:rotate(90deg)}
+  /* Quiz Map */
+  .quiz-map-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;padding:6px 2px}
+  .quiz-map-item{position:relative;background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:16px 14px 12px;cursor:pointer;transition:all .22s cubic-bezier(.4,0,.2,1);overflow:hidden;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .quiz-map-item:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(99,102,241,.12);border-color:var(--purple2)}
+  .quiz-map-item:active{transform:scale(.97);transition:all .08s}
+  .quiz-map-item .map-icon{font-size:2rem;margin-bottom:8px;display:block;line-height:1}
+  .quiz-map-item .map-name{font-weight:700;font-size:0.85rem;color:var(--text);margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+  .quiz-map-item .map-meta{font-size:0.68rem;color:var(--text3);line-height:1.4}
+  .quiz-map-item .map-tags{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;margin-top:8px;min-height:18px}
+  .quiz-map-item .map-progress{height:5px;border-radius:3px;background:var(--border2);margin-top:10px;overflow:hidden}
+  .quiz-map-item .map-progress-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+  .quiz-map-item.active{border-color:var(--purple);background:linear-gradient(135deg,#f5f3ff,#ede9fe);box-shadow:0 0 0 3px rgba(139,92,246,.15),0 4px 16px rgba(139,92,246,.1)}
+  .quiz-map-item.mastered{border-color:#86efac;background:linear-gradient(135deg,#f0fdf4,#dcfce7)}
+  .quiz-map-item.learning{border-color:#fcd34d;background:linear-gradient(135deg,#fffbeb,#fef3c7)}
+  .quiz-map-item.new-item{border-color:#93c5fd;background:linear-gradient(135deg,#eff6ff,#dbeafe)}
+  .quiz-map-empty{text-align:center;padding:40px 20px;color:var(--text3)}
+  .quiz-map-empty .icon{font-size:3rem;margin-bottom:10px;opacity:.5;display:block}
+  .quiz-map-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;margin-bottom:4px;font-size:0.72rem;padding:8px 12px;background:var(--surface2);border-radius:10px}
+  .quiz-map-legend-item{display:flex;align-items:center;gap:5px;font-weight:500}
+  .quiz-map-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .quiz-map-toggle{background:var(--surface);border:1.5px solid var(--border2);border-radius:14px;padding:12px 16px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+  .quiz-map-toggle:hover{border-color:var(--purple2);box-shadow:0 2px 8px rgba(0,0,0,.06)}
+  .quiz-map-toggle:active{background:var(--purple4);border-color:var(--purple2)}
+  .quiz-map-toggle .toggle-info{display:flex;align-items:center;gap:12px}
+  .quiz-map-toggle .toggle-icon{font-size:1.4rem}
+  .quiz-map-toggle .toggle-name{font-weight:700;font-size:1rem;color:var(--text)}
+  .quiz-map-toggle .toggle-meta{font-size:0.75rem;color:var(--text3)}
+  .quiz-map-toggle .toggle-arrow{font-size:0.85rem;color:var(--text3);transition:transform .22s cubic-bezier(.4,0,.2,1)}
+  .quiz-map-toggle .toggle-arrow.expanded{transform:rotate(90deg)}
 
-/* Favorite tags */
-.fav-tag-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:14px;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all .15s;border:1.5px solid transparent}
-.fav-tag-chip:active{transform:scale(.95)}
-.fav-tag-chip.selected{background:var(--purple);color:#fff;border-color:var(--purple)}
-.fav-tag-chip:not(.selected){background:var(--purple4);color:var(--purple);border-color:var(--purple3)}
-.fav-tag-chip .tag-del{cursor:pointer;opacity:0.6;margin-left:2px;font-size:0.65rem}
-.fav-tag-chip .tag-del:hover{opacity:1}
-.fav-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.95rem;transition:all .15s}
-.fav-btn:active{transform:scale(.9)}
-.fav-btn.active{background:var(--coral);border-color:var(--coral);color:#fff}
-.fav-btn:not(.active){color:var(--text3)}
+  /* Tree view */
+  .quiz-tree-bank{margin-bottom:6px;border-radius:14px;overflow:hidden;transition:all .2s}
+  .quiz-tree-bank.active>.quiz-tree-header{border-color:var(--purple);background:linear-gradient(135deg,#f5f3ff,#ede9fe)}
+  .quiz-tree-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:var(--surface);border-radius:12px;border:1.5px solid var(--border2);transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,.03)}
+  .quiz-tree-header:hover{border-color:var(--purple2);box-shadow:0 3px 12px rgba(99,102,241,.08)}
+  .quiz-tree-header .tree-arrow{font-size:0.7rem;width:16px;text-align:center;transition:transform .22s cubic-bezier(.4,0,.2,1);color:var(--text3);flex-shrink:0}
+  .quiz-tree-header .tree-arrow.expanded{transform:rotate(90deg)}
+  .quiz-tree-header .tree-icon{font-size:1.3rem;flex-shrink:0}
+  .quiz-tree-header .tree-info{flex:1;min-width:0}
+  .quiz-tree-header .tree-name{font-weight:650;font-size:0.9rem;color:var(--text);line-height:1.3}
+  .quiz-tree-header .tree-meta{font-size:0.7rem;color:var(--text3);margin-top:1px}
+  .quiz-tree-header .tree-progress{width:56px;height:5px;border-radius:3px;background:var(--border2);overflow:hidden;flex-shrink:0}
+  .quiz-tree-header .tree-progress-fill{height:100%;border-radius:3px;transition:width .5s}
+  .quiz-tree-questions{margin-left:28px;margin-top:4px;padding:8px 0}
+  .quiz-tree-type{margin-bottom:6px}
+  .quiz-tree-type-header{font-size:0.75rem;font-weight:600;color:var(--text2);padding:6px 10px;display:flex;align-items:center;gap:5px}
+  .quiz-tree-type-header .type-count{font-size:0.66rem;color:var(--text3);margin-left:auto}
+  .quiz-tree-q-item{display:flex;align-items:center;gap:8px;padding:6px 10px 6px 18px;border-radius:8px;cursor:pointer;font-size:0.78rem;transition:all .12s;color:var(--text2)}
+  .quiz-tree-q-item:hover{background:var(--surface2);color:var(--text)}
+  .quiz-tree-q-item .q-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .quiz-tree-q-item .q-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
-/* Bank tag chips */
-.bank-tag-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:0.65rem;background:var(--purple4);color:var(--purple);border:1px solid var(--purple3);font-family:var(--font)}
-.bank-tag-chip .tag-x{cursor:pointer;font-size:0.6rem;opacity:0.6;margin-left:3px;padding:0 2px}
-.bank-tag-chip .tag-x:hover{opacity:1}
-.tag-suggest-chip{cursor:pointer;display:inline-block;padding:2px 7px;margin:1px 2px;border-radius:8px;font-size:0.65rem;background:var(--surface2);border:1px solid var(--border);color:var(--text2)}
-.tag-suggest-chip:hover{background:var(--purple4);border-color:var(--purple2);color:var(--purple)}
-.map-tag-chip{display:inline-block;padding:1px 5px;border-radius:8px;font-size:0.6rem;background:var(--purple4);color:var(--purple);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-/* Tag tree view */
-.quiz-tagtree-header{transition:background .15s,border-color .15s}
-.quiz-tagtree-bank{transition:background .15s,border-color .15s,transform .1s}
-.quiz-tagtree-bank:hover{transform:translateX(3px)}
-.quiz-tagtree-bank.active{border-color:var(--purple2)!important;background:var(--purple4)!important}
-.fav-indicator{position:absolute;top:8px;right:8px;font-size:0.75rem;color:var(--coral);pointer-events:none;z-index:5;animation:favPop .3s ease}
+  /* Tag tree view */
+  .quiz-tagtree-node{margin-bottom:1px}
+  .quiz-tagtree-header{display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;font-weight:600;font-size:0.84rem;border-radius:10px;background:var(--surface2);border:1.5px solid var(--border2);margin-bottom:3px;transition:all .18s;user-select:none}
+  .quiz-tagtree-header:hover{background:var(--purple4);border-color:var(--purple2)}
+  .quiz-tagtree-header .tag-arrow{font-size:0.6rem;width:12px;text-align:center;transition:transform .2s;flex-shrink:0;color:var(--text3)}
+  .quiz-tagtree-header .tag-arrow.expanded{transform:rotate(90deg)}
+  .quiz-tagtree-header .tag-icon{font-size:0.75rem;flex-shrink:0}
+  .quiz-tagtree-header .tag-label{flex:1}
+  .quiz-tagtree-header .tag-count{font-size:0.66rem;color:var(--text3);font-weight:400}
+  .quiz-tagtree-bank{display:flex;align-items:center;gap:10px;padding:8px 14px;border:1.5px solid var(--border2);border-radius:10px;margin-bottom:3px;cursor:pointer;background:var(--surface);transition:all .18s;box-shadow:0 1px 2px rgba(0,0,0,.02)}
+  .quiz-tagtree-bank:hover{transform:translateX(3px);border-color:var(--purple2);box-shadow:0 3px 10px rgba(99,102,241,.08)}
+  .quiz-tagtree-bank.active{border-color:var(--purple)!important;background:linear-gradient(135deg,#f5f3ff,#ede9fe)!important;box-shadow:0 0 0 2px rgba(139,92,246,.12)}
+  .quiz-tagtree-bank .tb-icon{font-size:1.2rem;flex-shrink:0}
+  .quiz-tagtree-bank .tb-info{flex:1;min-width:0}
+  .quiz-tagtree-bank .tb-name{font-weight:650;font-size:0.84rem;color:var(--text);line-height:1.3}
+  .quiz-tagtree-bank .tb-meta{font-size:0.68rem;color:var(--text3)}
+  .quiz-tagtree-bank .tb-progress{width:48px;height:5px;border-radius:3px;background:var(--border2);overflow:hidden;flex-shrink:0}
+  .quiz-tagtree-bank .tb-progress-fill{height:100%;border-radius:3px}
+  .fav-indicator{position:absolute;top:8px;right:8px;font-size:0.75rem;color:var(--coral);pointer-events:none;z-index:5;animation:favPop .3s ease}
 @keyframes favPop{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
 .fav-filter-bar{display:flex;gap:6px;flex-wrap:wrap;padding:10px 0}
 .fav-item{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius2);padding:12px;margin-bottom:8px;cursor:pointer;transition:all .12s}
@@ -806,15 +808,6 @@ B. 选项
             <div class="quiz-map-legend-item"><div class="quiz-map-legend-dot" style="background:var(--blue)"></div>未开始</div>
           </div>
         </div>
-      </div>
-      <div class="quiz-immersive-bar" id="quizImmersiveBar">
-        <button class="quiz-immersive-icon-btn" onclick="exitQuizImmersive()" title="退出沉浸">←</button>
-        <div style="flex:1;min-width:0">
-          <div id="quizImmersiveTitle" style="font-weight:700;font-size:0.86rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">题库</div>
-          <div id="quizImmersiveMeta" style="font-size:0.68rem;color:var(--text3)">0 / 0</div>
-        </div>
-        <button class="quiz-immersive-icon-btn" onclick="openQuizJump()" title="题目列表">📋</button>
-        <button class="quiz-immersive-icon-btn" onclick="toggleQuizMapExpand();exitQuizImmersive()" title="题库地图">🗺️</button>
       </div>
       <div id="quizMainContainer"></div>
       <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="quizActionBar" hidden>
@@ -1353,6 +1346,54 @@ const ID = () => 'id_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
 function toast(m){const e=document.createElement('div');e.className='toast';e.textContent=m;document.getElementById('toastContainer').appendChild(e);setTimeout(()=>e.remove(),800)}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 function jse(s){return String(s).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}
+function renderStemWithHighlights(stem, highlights) {
+  if (!highlights || !highlights.length) return esc(stem);
+  let html = esc(stem);
+  highlights.forEach(hl => {
+    const escaped = esc(hl.text);
+    if (hl.type === 'highlight') {
+      html = html.replace(escaped, '<mark data-hl-type="highlight" data-hl-text="' + esc(hl.text) + '">' + escaped + '</mark>');
+    } else {
+      html = html.replace(escaped, '<u class="hl-underline" data-hl-type="underline" data-hl-text="' + esc(hl.text) + '">' + escaped + '</u>');
+    }
+  });
+  return html;
+}
+function applyStemHighlight(bankId, qid, text, type) {
+  if (!A.quizProgress[bankId]) A.quizProgress[bankId] = {};
+  const p = getProgress(bankId, qid) || {};
+  const highlights = [...(p.highlights || [])];
+  if (!highlights.some(h => h.text === text && h.type === type)) {
+    highlights.push({ text, type });
+  }
+  A.quizProgress[bankId][qid] = { ...p, highlights };
+  saveQuizProgress();
+}
+function removeStemHighlight(bankId, qid, text, type) {
+  const p = getProgress(bankId, qid);
+  if (!p || !p.highlights) return;
+  const highlights = p.highlights.filter(h => !(h.text === text && h.type === type));
+  A.quizProgress[bankId][qid] = { ...p, highlights };
+  saveQuizProgress();
+}
+function findQuestionById(qid) {
+  for (const bank of A.quizBanks) {
+    const q = bank.questions.find(q => q.id === qid);
+    if (q) return q;
+  }
+  return null;
+}
+function refreshCurrentCardStem(qid) {
+  const stemDiv = document.querySelector('.quiz-card-q[data-qid="' + qid + '"] .q-stem');
+  if (!stemDiv) return;
+  const q = findQuestionById(qid);
+  if (!q) return;
+  const p = getProgress(currentQuizBankId, q.id);
+  const highlights = p ? (p.highlights || []) : [];
+  if (!q.type.includes('填空')) {
+    stemDiv.innerHTML = renderStemWithHighlights(q.stem, highlights);
+  }
+}
 function jsArg(s){return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,' ')}
 function textVal(v){return v == null ? '' : String(v).trim()}
 function firstText(...vals){for(const v of vals){const s=textVal(v);if(s)return s}return ''}
@@ -1902,6 +1943,8 @@ function renderQuizCard(q, index, total) {
     card.appendChild(favIndicator);
   }
 
+  const pProg = getProgress(currentQuizBankId, q.id);
+  const stemHighlights = pProg ? (pProg.highlights || []) : [];
   let stemHtml = '';
   if (q.type.includes('填空')) {
     const blankPattern = /_{2,}|（\s*）|\(\s*\)/g;
@@ -1915,10 +1958,59 @@ function renderQuizCard(q, index, total) {
       }
     }
   } else {
-    stemHtml = esc(q.stem);
+    stemHtml = renderStemWithHighlights(q.stem, stemHighlights);
   }
   stemDiv.innerHTML = stemHtml;
   card.appendChild(stemDiv);
+
+  // Highlight toolbar: show on text selection
+  stemDiv.addEventListener('mouseup', () => {
+    setTimeout(() => {
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed && sel.anchorNode && stemDiv.contains(sel.anchorNode)) {
+        const tb = document.getElementById('hlToolbar');
+        if (!tb) return;
+        const rect = sel.getRangeAt(0).getBoundingClientRect();
+        tb._qid = q.id;
+        tb._bankId = currentQuizBankId;
+        tb.style.display = 'block';
+        let top = rect.top - 42;
+        if (top < 5) top = rect.bottom + 5;
+        tb.style.top = top + 'px';
+        tb.style.left = Math.max(5, Math.min(rect.left, window.innerWidth - 120)) + 'px';
+      }
+    }, 50);
+  });
+  stemDiv.addEventListener('touchend', () => {
+    setTimeout(() => {
+      const sel = window.getSelection();
+      if (sel && !sel.isCollapsed && sel.anchorNode && stemDiv.contains(sel.anchorNode)) {
+        const tb = document.getElementById('hlToolbar');
+        if (!tb) return;
+        const rect = sel.getRangeAt(0).getBoundingClientRect();
+        tb._qid = q.id;
+        tb._bankId = currentQuizBankId;
+        tb.style.display = 'block';
+        let top = rect.top - 48;
+        if (top < 5) top = rect.bottom + 5;
+        tb.style.top = top + 'px';
+        tb.style.left = Math.max(5, Math.min(rect.left, window.innerWidth - 120)) + 'px';
+      }
+    }, 100);
+  });
+
+  // Click on existing highlight to remove it
+  stemDiv.addEventListener('click', (e) => {
+    const el = e.target.closest('[data-hl-type]');
+    if (!el) return;
+    e.stopPropagation();
+    const hlType = el.dataset.hlType;
+    const hlText = el.dataset.hlText;
+    if (confirm('删除此' + (hlType === 'highlight' ? '高亮' : '下划线') + '标记？')) {
+      removeStemHighlight(currentQuizBankId, q.id, hlText, hlType);
+      refreshCurrentCardStem(q.id);
+    }
+  });
 
   // Input area
   const inputArea = document.createElement('div');
@@ -1944,6 +2036,9 @@ function renderQuizCard(q, index, total) {
       const sel = inputArea.querySelector('input:checked');
       return sel ? sel.value : '';
     };
+    inputArea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); doCheck(); }
+    });
   } else if (q.type.includes('多选')) {
     q.options.forEach(opt => {
       const lbl = document.createElement('label');
@@ -1964,6 +2059,9 @@ function renderQuizCard(q, index, total) {
       const checked = [...inputArea.querySelectorAll('input:checked')].map(c => c.value);
       return checked.sort().join(',');
     };
+    inputArea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); doCheck(); }
+    });
   } else if (q.type.includes('填空')) {
     const blankPattern = /_{2,}|（\s*）|\(\s*\)/g;
     const blanks = (q.stem.match(blankPattern) || []);
@@ -1988,7 +2086,7 @@ function renderQuizCard(q, index, total) {
           e.preventDefault();
           const next = fillInputs[bi + 1];
           if (next) next.focus();
-          else checkBtn.focus();
+          else doCheck();
         }
       });
       row.appendChild(label);
@@ -2006,6 +2104,9 @@ function renderQuizCard(q, index, total) {
     const ta = document.createElement('textarea');
     ta.style.cssText = 'width:100%;height:80px;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--font);font-size:calc(1.25rem * var(--quiz-scale));outline:none;background:var(--surface);resize:vertical';
     ta.addEventListener('input', () => { saveQuizProgress(); });
+    ta.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); doCheck(); }
+    });
     inputArea.appendChild(ta);
     card._getAnswer = () => ta.value.trim();
   }
@@ -2248,10 +2349,11 @@ function refreshCardFooter(card, qid) {
   html += `<button class="quiz-mini-btn" onclick="event.stopPropagation();editQuestion('${q.id}')" title="编辑">✎ 编辑</button>`;
   html += `</div>`;
 
-  // Notes and AI feedback - only after answering
+  // Notes - always visible
+  const notes = p ? (p.notes || '') : '';
+  html += `<div style="margin-top:6px"><input class="quiz-note-input" id="qnote_${q.id}" placeholder="添加笔记..." value="${esc(notes)}" onchange="saveQuestionNote('${q.id}', this.value)" style="width:100%;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;font-size:0.78rem;font-family:var(--font);outline:none;background:var(--surface)"></div>`;
+  // AI feedback - only after answering
   if (p && p.status) {
-    const notes = p.notes || '';
-    html += `<div style="margin-top:6px"><input class="quiz-note-input" id="qnote_${q.id}" placeholder="添加笔记..." value="${esc(notes)}" onchange="saveQuestionNote('${q.id}', this.value)" style="width:100%;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;font-size:0.78rem;font-family:var(--font);outline:none;background:var(--surface)"></div>`;
     const ai = p.aiFeedback || '';
     if (ai) {
       html += `<div class="quiz-ai-feedback" style="margin-top:4px;padding:6px 8px;background:#fefce8;border-radius:6px;border-left:3px solid #eab308;font-size:0.78rem;line-height:1.4">🤖 ${esc(ai).replace(/\n/g,'<br>')}</div>`;
@@ -2750,8 +2852,6 @@ window.selectBank = function(bankId) {
   setTimeout(restoreQuizProgress, 150);
   setTimeout(()=>{
     bindFocusMode();
-    if(isMobileQuizViewport())setQuizImmersive(true);
-    else setQuizImmersive(false);
   }, 200);
   updateBankSelect();
   updateBankTagEditor();
@@ -2762,8 +2862,7 @@ window.toggleQuizMapExpand = function() {
   const mapCard = document.getElementById('quizMapCard');
   const arrow = document.getElementById('quizMapToggleArrow');
   if (!mapCard) return;
-  if(document.body.classList.contains('quiz-immersive'))setQuizImmersive(false);
-  
+
   if (mapCard.style.display === 'none') {
     mapCard.style.display = '';
     if (arrow) arrow.classList.add('expanded');
@@ -2846,12 +2945,11 @@ function restoreQuizProgress() {
 
 // Scroll to element and focus first input (fixed top position)
 function scrollToAndFocus(element) {
-  const scroller = document.body.classList.contains('quiz-immersive') ? document.getElementById('quizMainContainer') : document.getElementById('panel-quiz');
+  const scroller = document.getElementById('panel-quiz');
   if (scroller) {
     const scrollerRect = scroller.getBoundingClientRect();
     const elemRect = element.getBoundingClientRect();
-    const offset = document.body.classList.contains('quiz-immersive') ? 8 : 16;
-    const targetScroll = scroller.scrollTop + elemRect.top - scrollerRect.top - offset;
+    const targetScroll = scroller.scrollTop + elemRect.top - scrollerRect.top - 16;
     scroller.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
   }
   setTimeout(() => {
@@ -3509,7 +3607,7 @@ function renderQuizMap() {
   if (quizMapViewMode === 'list' || quizMapViewMode === 'tree' || quizMapViewMode === 'tagtree') {
     container.style.gridTemplateColumns = '1fr';
   } else {
-    container.style.gridTemplateColumns = 'repeat(auto-fill,minmax(140px,1fr))';
+    container.style.gridTemplateColumns = 'repeat(auto-fill,minmax(148px,1fr))';
   }
   
   const icons = ['📘', '📗', '📙', '📕', '📓', '📔', '📒', '📚', '🔬', '⚡', '🌟', '💡', '🎯', '📝', '🧠'];
@@ -3521,20 +3619,20 @@ function renderQuizMap() {
       const totalQ = stats.total || bank.questions.length;
       const attempted = stats.attempted || 0;
       const progressPct = stats.progressPct;
-      
+
       let statusClass = 'new-item';
       if (accuracy >= 80 && attempted >= totalQ * 0.5) statusClass = 'mastered';
       else if (attempted > 0) statusClass = 'learning';
-      
+
       const isActive = bank.id === currentQuizBankId;
       const icon = icons[idx % icons.length];
       const isExpanded = expandedBanks.has(bank.id);
-      
+
       let progressColor = 'var(--blue)';
       if (accuracy >= 80) progressColor = '#22c55e';
       else if (accuracy >= 60) progressColor = '#f59e0b';
       else if (attempted > 0) progressColor = '#ef4444';
-      
+
       // Group questions by type
       const typeGroups = {};
       bank.questions.forEach(q => {
@@ -3542,47 +3640,37 @@ function renderQuizMap() {
         if (!typeGroups[type]) typeGroups[type] = [];
         typeGroups[type].push(q);
       });
-      
+
       const typeIcons = { '单选题': '🔘', '多选题': '☑️', '填空题': '✏️', '简答题': '📝', '判断题': '✓✗' };
-      
-      let html = `<div class="quiz-tree-bank${isActive ? ' active' : ''} ${statusClass}" style="margin-bottom:4px">
-        <div class="quiz-tree-header" onclick="toggleBankExpand('${bank.id}')" style="display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border2)">
-          <span style="font-size:0.7rem;transition:transform .2s;${isExpanded ? 'transform:rotate(90deg)' : ''}">▶</span>
-          <span style="font-size:1.2rem">${icon}</span>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:600;font-size:0.9rem">${esc(bank.name)}</div>
-            <div style="font-size:0.72rem;color:var(--text3)">${totalQ}题 · 已做${attempted}题 · 正确率${accuracy}%</div>
-          </div>
-          <div style="width:60px;height:4px;background:var(--border);border-radius:2px;overflow:hidden">
-            <div style="width:${progressPct}%;height:100%;background:${progressColor};border-radius:2px"></div>
-          </div>
-        </div>`;
-      
+
+      let html = '<div class="quiz-tree-bank' + (isActive ? ' active' : '') + ' ' + statusClass + '">';
+      html += '<div class="quiz-tree-header" onclick="toggleBankExpand(\'' + bank.id + '\')">';
+      html += '<span class="tree-arrow' + (isExpanded ? ' expanded' : '') + '">▶</span>';
+      html += '<span class="tree-icon">' + icon + '</span>';
+      html += '<div class="tree-info"><div class="tree-name">' + esc(bank.name) + '</div>';
+      html += '<div class="tree-meta">' + totalQ + '题 · 已做' + attempted + '题 · 正确率' + accuracy + '%</div></div>';
+      html += '<div class="tree-progress"><div class="tree-progress-fill" style="width:' + progressPct + '%;background:' + progressColor + '"></div></div>';
+      html += '</div>';
+
       if (isExpanded) {
-        html += `<div class="quiz-tree-questions" style="margin-left:24px;margin-top:2px">`;
+        html += '<div class="quiz-tree-questions">';
         Object.entries(typeGroups).forEach(([type, questions]) => {
-          html += `<div class="quiz-tree-type" style="margin-bottom:4px">
-            <div style="font-size:0.78rem;font-weight:600;color:var(--text2);padding:6px 8px;display:flex;align-items:center;gap:4px">
-              <span>${typeIcons[type] || '📄'}</span>
-              <span>${type}</span>
-              <span style="font-size:0.68rem;color:var(--text3);margin-left:auto">${questions.length}题</span>
-            </div>
-            <div style="margin-left:16px">`;
+          html += '<div class="quiz-tree-type">';
+          html += '<div class="quiz-tree-type-header"><span>' + (typeIcons[type] || '📄') + '</span><span>' + type + '</span><span class="type-count">' + questions.length + '题</span></div>';
           questions.forEach((q, qi) => {
             const p = getProgress(bank.id, q.id);
-            const statusDot = p ? (p.status === 'correct' ? '🟢' : p.status === 'wrong' ? '🔴' : '🟡') : '⚪';
+            const dotColor = p ? (p.status === 'correct' ? '#22c55e' : p.status === 'wrong' ? '#ef4444' : '#f59e0b') : '#d1d5db';
             const stemPreview = q.stem.length > 30 ? q.stem.slice(0, 30) + '...' : q.stem;
-            html += `<div onclick="selectBank('${bank.id}')" style="font-size:0.75rem;padding:4px 8px;cursor:pointer;display:flex;align-items:center;gap:6px;border-radius:4px:hover;background:var(--surface2)">
-              <span style="font-size:0.6rem">${statusDot}</span>
-              <span style="color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${qi + 1}. ${esc(stemPreview)}</span>
-            </div>`;
+            html += '<div class="quiz-tree-q-item" onclick="event.stopPropagation();selectBank(\'' + bank.id + '\')">';
+            html += '<span class="q-dot" style="background:' + dotColor + '"></span>';
+            html += '<span class="q-label">' + (qi + 1) + '. ' + esc(stemPreview) + '</span></div>';
           });
-          html += `</div></div>`;
+          html += '</div>';
         });
-        html += `</div>`;
+        html += '</div>';
       }
-      
-      html += `</div>`;
+
+      html += '</div>';
       return html;
     }).join('');
     return;
@@ -3608,37 +3696,25 @@ function renderQuizMap() {
         const isActive = bank.id === currentQuizBankId;
 
         return '<div class="quiz-tagtree-bank' + (isActive ? ' active' : '') + '" onclick="selectBank(\'' + bank.id + '\')"'
-          + ' style="margin-left:' + (depth * 16) + 'px;display:flex;align-items:center;gap:10px;padding:8px 12px;'
-          + 'border:1px solid var(--border2);border-radius:8px;margin-bottom:3px;cursor:pointer;'
-          + 'background:' + (isActive ? 'var(--purple4)' : 'var(--surface)') + ';transition:background .15s"'
-          + ' onmouseenter="if(!' + str(isActive).lower() + ')this.style.background=\'var(--surface2)\'"'
-          + ' onmouseleave="if(!' + str(isActive).lower() + ')this.style.background=\'var(--surface)\'"'
-          + '>'
-          + '<span style="font-size:1.1rem;flex-shrink:0">' + icon + '</span>'
-          + '<div style="flex:1;min-width:0">'
-          + '<div style="font-weight:600;font-size:0.82rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(bank.name) + '</div>'
-          + '<div style="font-size:0.68rem;color:var(--text3)">' + totalQ + '题 · 已做' + attempted + ' · ' + accuracy + '%</div>'
+          + ' style="margin-left:' + (depth * 18) + 'px">'
+          + '<span class="tb-icon">' + icon + '</span>'
+          + '<div class="tb-info">'
+          + '<div class="tb-name">' + esc(bank.name) + '</div>'
+          + '<div class="tb-meta">' + totalQ + '题 · 已做' + attempted + ' · ' + accuracy + '%</div>'
           + '</div>'
-          + '<div style="width:50px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;flex-shrink:0">'
-          + '<div style="width:' + progressPct + '%;height:100%;background:' + color + ';border-radius:2px"></div>'
-          + '</div></div>';
+          + '<div class="tb-progress"><div class="tb-progress-fill" style="width:' + progressPct + '%;background:' + color + '"></div></div>'
+          + '</div>';
       }
 
       const isExpanded = expandedTags.has(node.id);
-      const arrow = isExpanded ? '▼' : '▶';
       const childCount = countBanksInTree(node);
       let html = '<div class="quiz-tagtree-node">'
         + '<div class="quiz-tagtree-header" onclick="event.stopPropagation();toggleTagExpand(\'' + node.id + '\')"'
-        + ' style="margin-left:' + (depth * 16) + 'px;padding:8px 12px;cursor:pointer;display:flex;align-items:center;'
-        + 'gap:8px;font-weight:600;font-size:0.82rem;border-radius:8px;background:var(--surface2);'
-        + 'border:1px solid var(--border2);margin-bottom:2px;transition:background .15s"'
-        + ' onmouseenter="this.style.background=\'var(--purple4)\';this.style.borderColor=\'var(--purple3)\'"'
-        + ' onmouseleave="this.style.background=\'var(--surface2)\';this.style.borderColor=\'var(--border2)\'"'
-        + '>'
-        + '<span style="font-size:0.65rem;width:12px;text-align:center">' + arrow + '</span>'
-        + '<span>🏷️</span>'
-        + '<span>' + esc(node.label) + '</span>'
-        + '<span style="font-size:0.68rem;color:var(--text3);margin-left:auto">' + childCount + '个</span>'
+        + ' style="margin-left:' + (depth * 18) + 'px">'
+        + '<span class="tag-arrow' + (isExpanded ? ' expanded' : '') + '">▶</span>'
+        + '<span class="tag-icon">🏷️</span>'
+        + '<span class="tag-label">' + esc(node.label) + '</span>'
+        + '<span class="tag-count">' + childCount + '个</span>'
         + '</div>';
       if (isExpanded && node.children) {
         node.children.forEach(function(c) { html += renderTagNode(c, depth + 1); });
@@ -3647,9 +3723,7 @@ function renderQuizMap() {
       return html;
     }
 
-    container.innerHTML = '<div style="display:flex;flex-direction:column;gap:1px">'
-      + tree.children.map(function(c) { return renderTagNode(c, 0); }).join('')
-      + '</div>';
+    container.innerHTML = tree.children.map(function(c) { return renderTagNode(c, 0); }).join('');
     return;
   }
 
@@ -3675,30 +3749,29 @@ function renderQuizMap() {
     const draggableAttrs = `draggable="true" data-bank-id="${bank.id}" ondragstart="onBankDragStart(event,'${bank.id}')" ondragover="onBankDragOver(event)" ondragenter="onBankDragEnter(event)" ondragleave="onBankDragLeave(event)" ondrop="onBankDrop(event,'${bank.id}')"`;
     
     if (quizMapViewMode === 'list') {
-      const listTagChips = (bank.tags && bank.tags.length) ? '<div style="margin-top:2px;display:flex;flex-wrap:wrap;gap:3px">' + bank.tags.map(t => '<span class="bank-tag-chip">' + esc(t) + '</span>').join('') + '</div>' : '';
-      return `<div class="quiz-map-item${isActive ? ' active' : ''} ${statusClass}" onclick="selectBank('${bank.id}')" ${draggableAttrs} style="display:flex;align-items:center;gap:12px;text-align:left;cursor:grab">
-        <span style="font-size:1.5rem;flex-shrink:0">${icon}</span>
-        <div style="flex:1;min-width:0">
-          <div class="map-name" style="font-size:0.9rem">${esc(bank.name)}</div>
-          <div class="map-meta">${totalQ}题 · 已做${attempted}题 · 正确率${accuracy}%</div>
-          ${listTagChips}
-          <div class="map-progress" style="margin-top:4px"><div class="map-progress-fill" style="width:${progressPct}%;background:${progressColor}"></div></div>
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-size:1.2rem;font-weight:700;color:${progressColor}">${accuracy}%</div>
-          <div style="font-size:0.65rem;color:var(--text3)">${bank.createdAt.slice(5,10)}</div>
-        </div>
-      </div>`;
+      const listTagChips = (bank.tags && bank.tags.length) ? '<div class="map-tags" style="margin-top:4px">' + bank.tags.map(t => '<span class="bank-tag-chip">' + esc(t) + '</span>').join('') + '</div>' : '';
+      return '<div class="quiz-map-item' + (isActive ? ' active' : '') + ' ' + statusClass + '" onclick="selectBank(\'' + bank.id + '\')" ' + draggableAttrs + ' style="display:flex;align-items:center;gap:14px;text-align:left;cursor:grab">'
+        + '<span style="font-size:1.6rem;flex-shrink:0">' + icon + '</span>'
+        + '<div style="flex:1;min-width:0">'
+        + '<div class="map-name" style="font-size:0.92rem">' + esc(bank.name) + '</div>'
+        + '<div class="map-meta">' + totalQ + '题 · 已做' + attempted + '题 · 正确率' + accuracy + '%</div>'
+        + listTagChips
+        + '<div class="map-progress" style="margin-top:6px"><div class="map-progress-fill" style="width:' + progressPct + '%;background:' + progressColor + '"></div></div>'
+        + '</div>'
+        + '<div style="text-align:right;flex-shrink:0">'
+        + '<div style="font-size:1.3rem;font-weight:700;color:' + progressColor + '">' + accuracy + '%</div>'
+        + '<div style="font-size:0.65rem;color:var(--text3)">' + bank.createdAt.slice(5, 10) + '</div>'
+        + '</div></div>';
     }
-    
-    const gridTagChips = (bank.tags && bank.tags.length) ? '<div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:2px">' + bank.tags.slice(0,3).map(t => '<span class="map-tag-chip">' + esc(t.split('/').pop()) + '</span>').join('') + (bank.tags.length > 3 ? '<span style="font-size:0.55rem;color:var(--text3)">+' + (bank.tags.length - 3) + '</span>' : '') + '</div>' : '';
-    return `<div class="quiz-map-item${isActive ? ' active' : ''} ${statusClass}" onclick="selectBank('${bank.id}')" ${draggableAttrs} style="cursor:grab">
-      <span class="map-icon">${icon}</span>
-      <div class="map-name" title="${esc(bank.name)}">${esc(bank.name)}</div>
-      <div class="map-meta">${totalQ}题 · ${accuracy}%</div>
-      ${gridTagChips}
-      <div class="map-progress"><div class="map-progress-fill" style="width:${progressPct}%;background:${progressColor}"></div></div>
-    </div>`;
+
+    const gridTagChips = (bank.tags && bank.tags.length) ? '<div class="map-tags">' + bank.tags.slice(0, 3).map(t => '<span class="map-tag-chip">' + esc(t.split('/').pop()) + '</span>').join('') + (bank.tags.length > 3 ? '<span style="font-size:0.55rem;color:var(--text3)">+' + (bank.tags.length - 3) + '</span>' : '') + '</div>' : '';
+    return '<div class="quiz-map-item' + (isActive ? ' active' : '') + ' ' + statusClass + '" onclick="selectBank(\'' + bank.id + '\')" ' + draggableAttrs + ' style="cursor:grab">'
+      + '<span class="map-icon">' + icon + '</span>'
+      + '<div class="map-name" title="' + esc(bank.name) + '">' + esc(bank.name) + '</div>'
+      + '<div class="map-meta">' + totalQ + '题 · ' + accuracy + '%</div>'
+      + gridTagChips
+      + '<div class="map-progress"><div class="map-progress-fill" style="width:' + progressPct + '%;background:' + progressColor + '"></div></div>'
+      + '</div>';
   }).join('');
 }
 
@@ -5579,6 +5652,35 @@ window.doQuickInsertWordGroup = function() {
 
 // ==================== INIT ====================
 function init(){
+  // Init global highlight toolbar
+  if (!document.getElementById('hlToolbar')) {
+    const tb = document.createElement('div');
+    tb.id = 'hlToolbar';
+    tb.className = 'hl-toolbar';
+    tb.innerHTML = '<button data-hl="highlight" style="color:#fef08a">高亮</button><button data-hl="underline" style="color:#a5b4fc">下划线</button>';
+    document.body.appendChild(tb);
+    tb.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const type = btn.dataset.hl;
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed) return;
+      const text = sel.toString().trim();
+      if (!text) return;
+      if (tb._qid && tb._bankId) {
+        applyStemHighlight(tb._bankId, tb._qid, text, type);
+        sel.removeAllRanges();
+        tb.style.display = 'none';
+        // Re-render current card stem
+        refreshCurrentCardStem(tb._qid);
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.hl-toolbar') && !e.target.closest('[data-hl-type]')) {
+        tb.style.display = 'none';
+      }
+    });
+  }
   const s=A.settings;
   if(s.zoom)zoomLevel=s.zoom;
   applyZoom();

@@ -949,6 +949,20 @@
       (analysis ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid #e2e8f0;white-space:normal;line-height:1.65;">${multilineHtml(analysis)}</div>` : '');
   }
 
+  function renderStemWithHighlights(stem, highlights) {
+    if (!highlights || !highlights.length) return escapeHtml(stem);
+    let html = escapeHtml(stem);
+    highlights.forEach(hl => {
+      const escaped = escapeHtml(hl.text);
+      if (hl.type === 'highlight') {
+        html = html.replace(escaped, `<mark style="background:#fef08a;border-radius:2px;padding:0 2px;cursor:pointer" data-hl-type="highlight" data-hl-text="${escapeHtml(hl.text)}">${escaped}</mark>`);
+      } else {
+        html = html.replace(escaped, `<u style="text-decoration-color:#6366f1;text-underline-offset:3px;cursor:pointer" data-hl-type="underline" data-hl-text="${escapeHtml(hl.text)}">${escaped}</u>`);
+      }
+    });
+    return html;
+  }
+
   function createCard(q, index) {
     const card = document.createElement('div');
     card.className = 'quiz-card';
@@ -957,8 +971,8 @@
     const record = getQuizRecord(q);
 
     const title = document.createElement('div');
-    title.style.cssText = 'font-weight:700;line-height:1.5;white-space:pre-wrap;';
-    title.textContent = `${index + 1}. [${q.type}] ${q.stem}`;
+    title.style.cssText = 'font-weight:700;line-height:1.5;white-space:pre-wrap;user-select:text;';
+    title.innerHTML = `${index + 1}. [${q.type}] ${renderStemWithHighlights(q.stem, record?.highlights)}`;
     card.appendChild(title);
 
     const userInputArea = document.createElement('div');
@@ -1033,6 +1047,17 @@
     fillSavedAnswer(record?.userAnswer);
     renderSavedFeedback(record);
 
+    // Note input
+    const noteInput = document.createElement('input');
+    noteInput.type = 'text';
+    noteInput.placeholder = '添加笔记...';
+    noteInput.style.cssText = 'width:100%;box-sizing:border-box;margin-top:8px;padding:6px 8px;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;';
+    noteInput.value = record?.notes || '';
+    noteInput.addEventListener('input', () => {
+      setQuizRecord(q, { notes: noteInput.value });
+    });
+    card.appendChild(noteInput);
+
     const btnRow = document.createElement('div');
     btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;';
 
@@ -1071,13 +1096,84 @@
       });
     });
 
+    // Enter key triggers check (Ctrl+Enter for textarea)
+    userInputArea.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        if (e.target.tagName === 'TEXTAREA' && !e.ctrlKey) return;
+        e.preventDefault();
+        checkBtn.click();
+      }
+    });
+
     btnRow.appendChild(checkBtn);
     card.appendChild(btnRow);
+
+    // Highlight toolbar (hidden by default)
+    const hlToolbar = document.createElement('div');
+    hlToolbar.style.cssText = 'position:fixed;z-index:9999;background:#1e293b;color:#fff;border-radius:8px;padding:4px;display:none;box-shadow:0 4px 12px rgba(0,0,0,0.3);font-size:13px;white-space:nowrap;';
+    hlToolbar.innerHTML = '<button data-hl="highlight" style="background:none;border:none;color:#fef08a;cursor:pointer;padding:4px 8px;border-radius:4px;font-size:13px;">高亮</button><button data-hl="underline" style="background:none;border:none;color:#a5b4fc;cursor:pointer;padding:4px 8px;border-radius:4px;font-size:13px;">下划线</button>';
+    card.appendChild(hlToolbar);
+
+    hlToolbar.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      const type = btn.dataset.hl;
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed) return;
+      const text = sel.toString().trim();
+      if (!text) return;
+      const rec = getQuizRecord(q) || {};
+      const highlights = [...(rec.highlights || [])];
+      if (!highlights.some(h => h.text === text && h.type === type)) {
+        highlights.push({ text, type });
+      }
+      setQuizRecord(q, { highlights });
+      title.innerHTML = `${index + 1}. [${q.type}] ${renderStemWithHighlights(q.stem, highlights)}`;
+      sel.removeAllRanges();
+      hlToolbar.style.display = 'none';
+    });
+
+    title.addEventListener('mouseup', () => {
+      setTimeout(() => {
+        const sel = window.getSelection();
+        if (sel && !sel.isCollapsed && sel.anchorNode && title.contains(sel.anchorNode)) {
+          const rect = sel.getRangeAt(0).getBoundingClientRect();
+          hlToolbar.style.display = 'block';
+          hlToolbar.style.top = (rect.top - 38) + 'px';
+          hlToolbar.style.left = Math.max(5, rect.left) + 'px';
+        } else {
+          hlToolbar.style.display = 'none';
+        }
+      }, 50);
+    });
+
+    // Click on existing highlight to remove it
+    title.addEventListener('click', (e) => {
+      const el = e.target.closest('[data-hl-type]');
+      if (!el) return;
+      const hlType = el.dataset.hlType;
+      const hlText = el.dataset.hlText;
+      if (confirm(`删除此${hlType === 'highlight' ? '高亮' : '下划线'}标记？`)) {
+        const rec = getQuizRecord(q) || {};
+        const highlights = (rec.highlights || []).filter(h => !(h.text === hlText && h.type === hlType));
+        setQuizRecord(q, { highlights });
+        title.innerHTML = `${index + 1}. [${q.type}] ${renderStemWithHighlights(q.stem, highlights)}`;
+      }
+    });
 
     addToQuestionBank(q);
 
     return card;
   }
+
+  // Global: hide highlight toolbars when clicking elsewhere
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('[data-hl-type]') && !e.target.closest('button[data-hl]')) {
+      document.querySelectorAll('.quiz-card > div').forEach(el => {
+        if (el.style && el.style.position === 'fixed' && el.style.zIndex === '9999') el.style.display = 'none';
+      });
+    }
+  });
 
   function buildDeepReviewPrompt(cards) {
     let prompt = '请作为一位严谨的学科老师，逐一批改以下题目，并给出针对性讲解。\n';
