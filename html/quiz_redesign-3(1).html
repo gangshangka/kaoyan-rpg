@@ -2049,6 +2049,24 @@ body.quiz-flow-mode .bottom-nav {
   transition: transform 0.3s ease !important;
 }
 
+/* --- 卡片右上角菜单在 Flow 模式下 --- */
+body.quiz-flow-mode .card-menu-dropdown {
+  background: rgba(255,255,255,0.95) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+}
+
+/* --- 下一题按钮在 footer 中 --- */
+.flow-next-btn {
+  padding: 5px 14px !important;
+  font-size: 0.78rem !important;
+  border-radius: 10px !important;
+}
+body.quiz-flow-mode .flow-next-btn {
+  font-size: 0.88rem !important;
+  padding: 7px 18px !important;
+  border-radius: 12px !important;
+}
+
 /* --- 沉浸式顶栏在 Flow 模式下隐藏 --- */
 body.quiz-flow-mode .quiz-immersive-bar {
   display: none !important;
@@ -2278,36 +2296,6 @@ body.quiz-flow-mode .quiz-flow-nav {
   text-align: center;
   font-family: 'JetBrains Mono', var(--mono);
 }
-.quiz-flow-exit {
-  position: fixed;
-  top: 12px;
-  right: 12px;
-  z-index: 101;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(0,0,0,0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  color: #fff;
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: all 0.15s;
-  display: none;
-}
-body.quiz-flow-mode .quiz-flow-exit {
-  display: flex !important;
-}
-.quiz-flow-exit:hover {
-  background: rgba(255,255,255,0.9);
-  color: #2D2D2D;
-}
-
 /* --- 进入 Flow 模式按钮（在普通模式下显示） --- */
 .quiz-flow-enter {
   display: inline-flex;
@@ -2733,8 +2721,6 @@ B. 选项B
           <div id="quizJumpList" style="flex:1;overflow-y:auto;padding:8px"></div>
         </div>
       </div>
-      <!-- Flow Mode 退出按钮 -->
-      <button class="quiz-flow-exit" id="quizFlowExit" onclick="exitQuizFlow()" title="退出专注模式">✕</button>
       <!-- Flow Mode 底部导航 -->
       <div class="quiz-flow-nav" id="quizFlowNav">
         <button class="quiz-flow-nav-btn" id="flowPrevBtn" onclick="flowNavigate(-1)">←</button>
@@ -3986,11 +3972,56 @@ function renderQuizCard(q, index, total) {
   delBtn.textContent = '删除';
   wrapper.appendChild(delBtn);
 
-  // Question number row: "3/20" on left, type badge on right
+  // Question number row: "3/20" on left, type badge on right, menu on far right
   const numDiv = document.createElement('div');
   numDiv.className = 'q-num';
   numDiv.innerHTML = `<span>${index + 1} / ${total}</span><span class="q-type-tag">${esc(q.type)}</span>`;
   card.appendChild(numDiv);
+
+  // 右上角展开菜单 ⋯
+  const menuWrap = document.createElement('div');
+  menuWrap.style.cssText = 'position:absolute;top:10px;right:10px;z-index:10';
+  const menuBtn = document.createElement('button');
+  menuBtn.type = 'button';
+  menuBtn.textContent = '⋯';
+  menuBtn.style.cssText = 'width:32px;height:32px;border-radius:10px;border:none;background:rgba(0,0,0,0.04);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#9A9690;transition:all .15s';
+  menuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const dropdown = menuWrap.querySelector('.card-menu-dropdown');
+    const isOpen = dropdown.style.display === 'flex';
+    // 关闭所有其他菜单
+    document.querySelectorAll('.card-menu-dropdown').forEach(d => d.style.display = 'none');
+    dropdown.style.display = isOpen ? 'none' : 'flex';
+  });
+  const dropdown = document.createElement('div');
+  dropdown.className = 'card-menu-dropdown';
+  dropdown.style.cssText = 'display:none;position:absolute;top:36px;right:0;flex-direction:column;gap:2px;background:rgba(255,255,255,0.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:12px;padding:4px;box-shadow:0 4px 24px rgba(0,0,0,0.1);min-width:120px';
+  dropdown.innerHTML = `<button class="card-menu-item" data-action="copy" style="padding:8px 12px;border:none;background:none;font-size:0.82rem;cursor:pointer;border-radius:8px;text-align:left;color:#2D2D2D;font-family:var(--font);transition:background .12s">📋 复制</button>` +
+    `<button class="card-menu-item" data-action="edit" style="padding:8px 12px;border:none;background:none;font-size:0.82rem;cursor:pointer;border-radius:8px;text-align:left;color:#2D2D2D;font-family:var(--font);transition:background .12s">✎ 编辑</button>` +
+    `<div style="height:1px;background:rgba(0,0,0,0.06);margin:2px 8px"></div>` +
+    `<button class="card-menu-item" data-action="exit" style="padding:8px 12px;border:none;background:none;font-size:0.82rem;cursor:pointer;border-radius:8px;text-align:left;color:#9A9690;font-family:var(--font);transition:background .12s">✕ 退出专注</button>`;
+  dropdown.querySelectorAll('.card-menu-item').forEach(item => {
+    item.addEventListener('mouseenter', () => item.style.background = 'rgba(0,0,0,0.04)');
+    item.addEventListener('mouseleave', () => item.style.background = 'none');
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.style.display = 'none';
+      const action = item.dataset.action;
+      if (action === 'copy') copyQuestionToClipboard(q.id);
+      else if (action === 'edit') editQuestion(q.id);
+      else if (action === 'exit') exitQuizFlow();
+    });
+  });
+  menuWrap.appendChild(menuBtn);
+  menuWrap.appendChild(dropdown);
+  card.appendChild(menuWrap);
+
+  // 点击卡片其他区域关闭菜单
+  card.addEventListener('click', (e) => {
+    if (!e.target.closest('.card-menu-dropdown') && !e.target.closest('[data-action]')) {
+      dropdown.style.display = 'none';
+    }
+  });
 
   // Stem - large and prominent
   const stemDiv = document.createElement('div');
@@ -4242,12 +4273,10 @@ function renderQuizCard(q, index, total) {
   feedbackDiv.className = 'quiz-feedback';
   card.appendChild(feedbackDiv);
 
-  // Footer: always visible with tools
+  // Footer: always visible with tools + next button
   const footerDiv = document.createElement('div');
   footerDiv.className = 'quiz-card-footer';
   card.appendChild(footerDiv);
-  // Render tools immediately
-  footerDiv.innerHTML = `<div class="quiz-card-tools"><span style="flex:1"></span><button class="quiz-mini-btn" onclick="event.stopPropagation();copyQuestionToClipboard('${q.id}')" title="复制题目和答案">📋 复制</button><button class="quiz-mini-btn" onclick="event.stopPropagation();editQuestion('${q.id}')" title="编辑">✎ 编辑</button></div>`;
 
   function doCheck() {
     const userAns = card._getAnswer();
@@ -4349,22 +4378,13 @@ function renderQuizCard(q, index, total) {
     saveQuizProgress();
     refreshCardFooter(card, q.id);
 
-    // Transform button to "下一题"
-    checkBtn.textContent = '下一题 →';
-    checkBtn.onclick = () => {
-      if (document.body.classList.contains('quiz-flow-mode')) {
-        flowNavigate(1);
-      } else {
-        const cards = document.querySelectorAll('.quiz-card-q');
-        const idx = [...cards].indexOf(card);
-        if (idx >= 0 && idx < cards.length - 1) {
-          const nextCard = cards[idx + 1];
-          scrollToAndFocus(nextCard);
-        }
-      }
-    };
+    // Disable submit button after answering
+    checkBtn.textContent = '已提交';
+    checkBtn.disabled = true;
+    checkBtn.style.opacity = '0.5';
+    checkBtn.style.cursor = 'default';
 
-    // Refresh footer to show notes after answering
+    // Refresh footer to show notes and next button after answering
     refreshCardFooter(card, q.id);
 
     if (isCorrect) Sound.sfx('task');
@@ -4464,12 +4484,13 @@ function refreshCardFooter(card, qid) {
   const q = card._data;
   let html = '';
 
-  // Tools row - always visible
+  // Tools row
   html += `<div class="quiz-card-tools">`;
   if (p && p.ts) html += `<span style="font-size:0.65rem;color:var(--text3)">${p.ts.replace('T',' ').slice(0,16)}</span>`;
   html += `<span style="flex:1"></span>`;
-  html += `<button class="quiz-mini-btn" onclick="event.stopPropagation();copyQuestionToClipboard('${q.id}')" title="复制题目和答案">📋 复制</button>`;
-  html += `<button class="quiz-mini-btn" onclick="event.stopPropagation();editQuestion('${q.id}')" title="编辑">✎ 编辑</button>`;
+  if (p && p.status) {
+    html += `<button class="quiz-mini-btn flow-next-btn" onclick="event.stopPropagation();if(document.body.classList.contains('quiz-flow-mode'))flowNavigate(1);else{const cards=document.querySelectorAll('.quiz-card-q');const idx=[...cards].indexOf(this.closest('.quiz-card-q'));if(idx>=0&&idx<cards.length-1)scrollToAndFocus(cards[idx+1])}" title="下一题" style="background:rgba(124,92,191,0.1);color:#7C5CBF;border-color:rgba(124,92,191,0.2);font-weight:600">下一题 →</button>`;
+  }
   html += `</div>`;
 
   // Notes - always visible
