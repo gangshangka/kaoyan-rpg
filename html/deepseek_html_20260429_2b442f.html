@@ -790,6 +790,7 @@ B. 选项
       </div>
       <div class="card" id="quizMapCard">
         <div class="card-header">🗺️ 题库地图 <span style="font-size:0.68rem;color:var(--text3);margin-left:8px">点击进入题库</span>
+          <button class="btn btn-sm btn-outline" onclick="pullDesktopQuestions()" style="font-size:0.7rem;padding:4px 8px;margin-right:4px">📥 拉取桌面</button>
           <button class="btn btn-sm btn-outline" onclick="toggleQuizMapView()" id="quizMapViewBtn" style="font-size:0.7rem;padding:4px 8px">列表</button>
         </div>
         <div class="card-body">
@@ -1140,6 +1141,66 @@ window.syncPull = async function(silent){
   }else if(!silent){toast('拉取失败，请检查配置')}
 };
 
+// Pull questions from desktop userscript via Gitee
+window.pullDesktopQuestions = async function() {
+  const cfg = A.syncCfg;
+  if (!cfg.geeToken || !cfg.geeRepo) {
+    return toast('请先在设置中配置 Gitee 同步');
+  }
+  const path = cfg.geePath.replace(/\.json$/, '') + '-desktop.json';
+  // also try the script's default path
+  const paths = [path, 'desktop-questions.json'];
+
+  let questions = null;
+  for (const p of paths) {
+    try {
+      const [owner, repo] = cfg.geeRepo.split('/');
+      const r = await fetch('https://gitee.com/api/v5/repos/' + owner + '/' + repo + '/contents/' + p + '?access_token=' + cfg.geeToken);
+      if (r.ok) {
+        const d = await r.json();
+        const raw = JSON.parse(decodeURIComponent(escape(atob(d.content.replace(/\s/g, '')))));
+        if (Array.isArray(raw) && raw.length > 0) {
+          questions = raw;
+          break;
+        }
+      }
+    } catch (e) {}
+  }
+
+  if (!questions || !questions.length) {
+    return toast('未找到桌面题库数据，请确认桌面端已配置 Gitee 并推送过');
+  }
+
+  // Convert to the web page's question format
+  const converted = questions.map((q, i) => normalizeQuizQuestion({
+    id: 'desktop_' + Date.now() + '_' + i,
+    type: q.type,
+    stem: q.stem,
+    options: q.options,
+    answer: q.answer,
+    analysis: q.analysis,
+    keywords: q.keywords
+  })).filter(q => q.stem);
+
+  if (!converted.length) {
+    return toast('题目格式转换失败');
+  }
+
+  const bankName = '桌面题库 ' + new Date().toISOString().slice(0, 10);
+  const bank = {
+    id: 'bank_desktop_' + Date.now(),
+    name: bankName,
+    questions: converted,
+    createdAt: TS(),
+    stats: { correct: 0, attempted: 0, total: converted.length, accuracy: 0 },
+    tags: ['桌面导入']
+  };
+
+  A.quizBanks.unshift(bank);
+  save(); renderQuizBanks(); renderBankSelect(); renderFavoriteList(); renderQuizMap();
+  toast('已从桌面拉取 ' + converted.length + ' 道题，题库：' + bankName);
+  if (A.syncCfg.autoSync) syncPush();
+};
 // ==================== MOBILE EDITOR OVERLAY ====================
 window.newNoteMobile = function(){
   document.getElementById('editorOverlay').classList.add('show');

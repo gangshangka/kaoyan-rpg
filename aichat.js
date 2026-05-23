@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         AI 聊天题转互动测验 + 多 Prompt 管理
 // @namespace    http://tampermonkey.net/
-// @version      5.1
-// @description  将规范题目转为可交互卡片，支持原文/渲染切换、多 Prompt 管理、粘贴和粘贴并发送、题库导出。兼容 DeepSeek / ChatGPT / 智谱清言。
+// @version      5.2
+// @description  将规范题目转为可交互卡片，支持原文/渲染切换、多 Prompt 管理、粘贴发送、题库导出、Gitee 自动同步。兼容 DeepSeek / ChatGPT / 智谱清言。
 // @match        https://chat.deepseek.com/*
 // @match        https://chat.openai.com/*
 // @match        https://chatgpt.com/*
@@ -18,7 +18,11 @@
     legacyPrompt: 'ds_keypoint_prompt',
     quizEnabled: 'ds_quiz_enabled_v2',
     quizRecords: 'ds_quiz_records_v1',
-    questionBank: 'ds_question_bank_v1'
+    questionBank: 'ds_question_bank_v1',
+    geeToken: 'ds_gee_token_v1',
+    geeRepo: 'ds_gee_repo_v1',
+    geePath: 'ds_gee_path_v1',
+    geeAutoSync: 'ds_gee_autosync_v1'
   };
 
   const SUPPORTED_TYPES = ['单选题', '多选题', '填空题', '简答题', '判断题'];
@@ -181,6 +185,73 @@
       bank.splice(0, bank.length - 800);
     }
     saveQuestionBank(bank);
+    // Auto-sync to Gitee if configured
+    const cfg = getGiteeConfig();
+    if (cfg.autoSync && cfg.token && cfg.repo) {
+      syncToGitee(true);
+    }
+  }
+
+  function getGiteeConfig() {
+    return {
+      token: localStorage.getItem(STORAGE_KEYS.geeToken) || '',
+      repo: localStorage.getItem(STORAGE_KEYS.geeRepo) || '',
+      path: localStorage.getItem(STORAGE_KEYS.geePath) || 'desktop-questions.json',
+      autoSync: localStorage.getItem(STORAGE_KEYS.geeAutoSync) === '1'
+    };
+  }
+
+  function saveGiteeConfig(cfg) {
+    localStorage.setItem(STORAGE_KEYS.geeToken, cfg.token || '');
+    localStorage.setItem(STORAGE_KEYS.geeRepo, cfg.repo || '');
+    localStorage.setItem(STORAGE_KEYS.geePath, cfg.path || 'desktop-questions.json');
+    localStorage.setItem(STORAGE_KEYS.geeAutoSync, cfg.autoSync ? '1' : '0');
+  }
+
+  async function syncToGitee(silent) {
+    const cfg = getGiteeConfig();
+    if (!cfg.token || !cfg.repo) {
+      if (!silent) alert('请先配置 Gitee：点击 ⚙ 同步设置');
+      return false;
+    }
+    const bank = loadQuestionBank();
+    if (!bank.length) return false;
+
+    try {
+      const [owner, repo] = cfg.repo.split('/');
+      const json = JSON.stringify(bank);
+      const b64 = btoa(unescape(encodeURIComponent(json)));
+
+      // Get existing file SHA
+      let sha = '';
+      try {
+        const r = await fetch('https://gitee.com/api/v5/repos/' + owner + '/' + repo + '/contents/' + cfg.path + '?access_token=' + cfg.token);
+        if (r.ok) { const d = await r.json(); sha = d.sha; }
+      } catch (e) {}
+
+      const method = sha ? 'PUT' : 'POST';
+      const body = { access_token: cfg.token, message: '更新桌面题库 ' + new Date().toISOString().slice(0, 19), content: b64 };
+      if (sha) body.sha = sha;
+
+      const res = await fetch('https://gitee.com/api/v5/repos/' + owner + '/' + repo + '/contents/' + cfg.path, {
+        method, headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      if (res.ok) {
+        if (!silent) {
+          const syncBtn = document.getElementById('ds-sync-status');
+          if (syncBtn) { syncBtn.textContent = '☁'; syncBtn.title = '同步成功'; syncBtn.style.background = '#16a34a'; setTimeout(() => { syncBtn.textContent = '⚙'; syncBtn.title = '同步设置'; syncBtn.style.background = '#0f766e'; }, 2000); }
+        }
+        return true;
+      } else {
+        if (!silent) alert('Gitee 推送失败，请检查 Token 和仓库名');
+        return false;
+      }
+    } catch (e) {
+      if (!silent) alert('Gitee 推送出错: ' + e.message);
+      return false;
+    }
   }
 
   function formatQuestionForExport(q) {
@@ -1128,6 +1199,118 @@
     scanTimer = window.setTimeout(scanAndConvert, 300);
   }
 
+  function closeSyncConfigDialog() {
+    document.getElementById('ds-sync-config-dialog')?.remove();
+  }
+
+  function openSyncConfigDialog() {
+    const existing = document.getElementById('ds-sync-config-dialog');
+    if (existing) { existing.remove(); return; }
+
+    const cfg = getGiteeConfig();
+
+    const dialog = document.createElement('div');
+    dialog.id = 'ds-sync-config-dialog';
+    dialog.style.cssText = [
+      'position:fixed', 'top:50%', 'left:50%', 'transform:translate(-50%,-50%)',
+      'width:min(420px,calc(100vw-32px))', 'background:#fff', 'color:#0f172a',
+      'border:1px solid #cbd5e1', 'border-radius:10px',
+      'box-shadow:0 20px 50px rgba(15,23,42,0.25)', 'z-index:10001',
+      'display:flex', 'flex-direction:column', 'overflow:hidden',
+      'font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'
+    ].join(';');
+
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e2e8f0;';
+    const title = document.createElement('div');
+    title.textContent = '☁ Gitee 同步配置';
+    title.style.cssText = 'font-size:16px;font-weight:700;';
+    header.appendChild(title);
+    const closeBtn = createSmallButton('关闭', '#64748b');
+    closeBtn.addEventListener('click', closeSyncConfigDialog);
+    header.appendChild(closeBtn);
+    dialog.appendChild(header);
+
+    const body = document.createElement('div');
+    body.style.cssText = 'display:flex;flex-direction:column;gap:10px;padding:14px;';
+
+    const tokenInput = document.createElement('input');
+    tokenInput.type = 'password';
+    tokenInput.placeholder = 'Gitee 私人令牌';
+    tokenInput.value = cfg.token;
+    tokenInput.style.cssText = 'width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:7px;font-size:14px;';
+
+    const repoInput = document.createElement('input');
+    repoInput.type = 'text';
+    repoInput.placeholder = '仓库，如：username/repo';
+    repoInput.value = cfg.repo;
+    repoInput.style.cssText = 'width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:7px;font-size:14px;';
+
+    const pathInput = document.createElement('input');
+    pathInput.type = 'text';
+    pathInput.placeholder = '文件路径';
+    pathInput.value = cfg.path;
+    pathInput.style.cssText = 'width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:7px;font-size:14px;';
+
+    const autoRow = document.createElement('label');
+    autoRow.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;';
+    const autoCheck = document.createElement('input');
+    autoCheck.type = 'checkbox';
+    autoCheck.checked = cfg.autoSync;
+    autoRow.appendChild(autoCheck);
+    autoRow.appendChild(document.createTextNode('自动同步（每次新题目自动推送到 Gitee）'));
+
+    const btnRow = document.createElement('div');
+    btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+
+    const saveBtn = createSmallButton('💾 保存配置', '#16a34a');
+    saveBtn.addEventListener('click', () => {
+      saveGiteeConfig({
+        token: tokenInput.value.trim(),
+        repo: repoInput.value.trim(),
+        path: pathInput.value.trim() || 'desktop-questions.json',
+        autoSync: autoCheck.checked
+      });
+      closeSyncConfigDialog();
+      alert('配置已保存');
+    });
+
+    const testBtn = createSmallButton('🔄 立即推送', '#2563eb');
+    testBtn.addEventListener('click', async () => {
+      saveGiteeConfig({
+        token: tokenInput.value.trim(),
+        repo: repoInput.value.trim(),
+        path: pathInput.value.trim() || 'desktop-questions.json',
+        autoSync: autoCheck.checked
+      });
+      testBtn.textContent = '推送中...';
+      testBtn.disabled = true;
+      const ok = await syncToGitee(false);
+      testBtn.textContent = ok ? '✓ 推送成功' : '✗ 推送失败';
+      testBtn.style.background = ok ? '#16a34a' : '#dc2626';
+      setTimeout(() => { testBtn.textContent = '🔄 立即推送'; testBtn.style.background = '#2563eb'; testBtn.disabled = false; }, 2000);
+    });
+
+    btnRow.append(saveBtn, testBtn);
+    body.append(
+      createField('Gitee Token', tokenInput),
+      createField('仓库 (owner/repo)', repoInput),
+      createField('文件路径', pathInput),
+      autoRow,
+      btnRow
+    );
+    body.appendChild(document.createElement('div')).innerHTML = '<span style="font-size:11px;color:#64748b">Token 在 gitee.com → 设置 → 私人令牌，需要仓库读写权限。推送的文件会自动同步到手机端网页。</span>';
+
+    dialog.appendChild(body);
+    document.body.appendChild(dialog);
+  }
+
+  function setupSyncConfigButton() {
+    const btn = makeFloatingButton('ds-sync-config-btn', '⚙', 'Gitee 同步设置', 260, '#0f766e');
+    if (!btn) return;
+    btn.addEventListener('click', openSyncConfigDialog);
+  }
+
   function closeExportDialog() {
     document.getElementById('ds-export-dialog')?.remove();
   }
@@ -1224,7 +1407,16 @@
         closeExportDialog();
       });
 
-      btnRow.append(copyBtn, downloadBtn, clearBtn);
+      const syncBtn = createSmallButton('☁ 推送到 Gitee', '#0f766e');
+      syncBtn.id = 'ds-sync-status';
+      syncBtn.addEventListener('click', async () => {
+        syncBtn.textContent = '推送中...';
+        syncBtn.disabled = true;
+        const ok = await syncToGitee(false);
+        syncBtn.disabled = false;
+      });
+
+      btnRow.append(copyBtn, downloadBtn, syncBtn, clearBtn);
       body.appendChild(btnRow);
     }
 
@@ -1243,6 +1435,7 @@
     setupQuizToggle();
     setupPromptButton();
     setupExportButton();
+    setupSyncConfigButton();
     if (quizEnabled) scanAndConvert();
 
     if (!observer) {
@@ -1251,6 +1444,7 @@
         setupQuizToggle();
         setupPromptButton();
         setupExportButton();
+        setupSyncConfigButton();
         scheduleScan();
       });
       observer.observe(document.body, { childList: true, subtree: true });
