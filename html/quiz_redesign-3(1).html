@@ -2005,17 +2005,12 @@ body:has(#panel-quiz.active) .nav-item.active { color: #7C5CBF !important; }
 
 /* 进入动画 */
 @keyframes osCardIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 1; transform: none; }
+  to { opacity: 1; transform: none; }
 }
 .quiz-card-wrap {
-  animation: osCardIn 0.28s cubic-bezier(0.4,0,0.2,1) both;
+  animation: none;
 }
-.quiz-card-wrap:nth-child(1) { animation-delay: 0ms; }
-.quiz-card-wrap:nth-child(2) { animation-delay: 40ms; }
-.quiz-card-wrap:nth-child(3) { animation-delay: 80ms; }
-.quiz-card-wrap:nth-child(4) { animation-delay: 120ms; }
-.quiz-card-wrap:nth-child(5) { animation-delay: 160ms; }
 
 /* ============================================================
    沉浸式 Flow 模式 — 一屏一题 · 悬浮输入 · 横向切题
@@ -2098,7 +2093,7 @@ body.quiz-flow-mode .quiz-card-wrap.flow-active {
   padding: 0 16px 120px !important;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch !important;
-  animation: flowSlideIn 0.35s cubic-bezier(0.4,0,0.2,1) both !important;
+  animation: none !important;
 }
 @keyframes flowSlideIn {
   from { opacity: 0; transform: translateX(40px); }
@@ -8429,18 +8424,7 @@ function showFlowQuestion(idx) {
 window.flowNavigate = function(dir) {
   const nextIdx = flowCurrentIdx + dir;
   if (nextIdx < 0 || nextIdx >= currentQuizCards.length) return;
-
-  // Animate exit
-  const current = currentQuizCards[flowCurrentIdx];
-  if (current) {
-    current.classList.add('flow-exit');
-    current.classList.remove('flow-active');
-  }
-
-  setTimeout(() => {
-    if (current) current.classList.remove('flow-exit');
-    showFlowQuestion(nextIdx);
-  }, 200);
+  showFlowQuestion(nextIdx);
 };
 
 // ==================== FULLSCREEN EDITOR (简答题全屏输入) ====================
