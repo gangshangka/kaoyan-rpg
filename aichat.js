@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         AI 聊天题转互动测验 + 多 Prompt 管理
 // @namespace    http://tampermonkey.net/
-// @version      5.0
-// @description  将规范题目转为可交互卡片，支持原文/渲染切换、多 Prompt 管理、粘贴和粘贴并发送。兼容 DeepSeek / ChatGPT / 智谱清言。
+// @version      5.1
+// @description  将规范题目转为可交互卡片，支持原文/渲染切换、多 Prompt 管理、粘贴和粘贴并发送、题库导出。兼容 DeepSeek / ChatGPT / 智谱清言。
 // @match        https://chat.deepseek.com/*
 // @match        https://chat.openai.com/*
 // @match        https://chatgpt.com/*
@@ -17,7 +17,8 @@
     prompts: 'ds_prompt_list_v2',
     legacyPrompt: 'ds_keypoint_prompt',
     quizEnabled: 'ds_quiz_enabled_v2',
-    quizRecords: 'ds_quiz_records_v1'
+    quizRecords: 'ds_quiz_records_v1',
+    questionBank: 'ds_question_bank_v1'
   };
 
   const SUPPORTED_TYPES = ['单选题', '多选题', '填空题', '简答题', '判断题'];
@@ -137,6 +138,64 @@
         localStorage.setItem(STORAGE_KEYS.quizRecords, JSON.stringify(quizRecords));
       } catch (err2) {}
     }
+  }
+
+  function loadQuestionBank() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.questionBank);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      return [];
+    }
+  }
+
+  function saveQuestionBank(bank) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.questionBank, JSON.stringify(bank));
+    } catch (err) {
+      const trimmed = bank.slice(-500);
+      try { localStorage.setItem(STORAGE_KEYS.questionBank, JSON.stringify(trimmed)); } catch (err2) {}
+    }
+  }
+
+  function addToQuestionBank(q) {
+    const bank = loadQuestionBank();
+    const key = getQuizRecordKey(q);
+    const exists = bank.findIndex(item => getQuizRecordKey(item) === key);
+    const entry = {
+      type: q.type,
+      stem: q.stem,
+      options: q.options || [],
+      answer: q.answer,
+      analysis: q.analysis || '',
+      keywords: q.keywords || '',
+      savedAt: new Date().toISOString()
+    };
+    if (exists >= 0) {
+      bank[exists] = entry;
+    } else {
+      bank.push(entry);
+    }
+    if (bank.length > 1000) {
+      bank.splice(0, bank.length - 800);
+    }
+    saveQuestionBank(bank);
+  }
+
+  function formatQuestionForExport(q) {
+    let text = '【' + q.type + '】' + q.stem + '\n';
+    if (q.options && q.options.length) {
+      q.options.forEach(opt => {
+        text += opt.label + '. ' + opt.text + '\n';
+      });
+    }
+    if (q.keywords) {
+      text += '关键词：' + q.keywords + '\n';
+    }
+    text += '答案：' + q.answer + '\n';
+    text += '解析：' + q.analysis;
+    return text;
   }
 
   function hashString(value) {
@@ -943,6 +1002,9 @@
 
     btnRow.appendChild(checkBtn);
     card.appendChild(btnRow);
+
+    addToQuestionBank(q);
+
     return card;
   }
 
@@ -1066,10 +1128,121 @@
     scanTimer = window.setTimeout(scanAndConvert, 300);
   }
 
+  function closeExportDialog() {
+    document.getElementById('ds-export-dialog')?.remove();
+  }
+
+  function openExportDialog() {
+    const existing = document.getElementById('ds-export-dialog');
+    if (existing) { existing.remove(); return; }
+
+    const bank = loadQuestionBank();
+
+    const dialog = document.createElement('div');
+    dialog.id = 'ds-export-dialog';
+    dialog.style.cssText = [
+      'position:fixed',
+      'top:50%',
+      'left:50%',
+      'transform:translate(-50%, -50%)',
+      'width:min(800px, calc(100vw - 32px))',
+      'max-height:min(700px, calc(100vh - 32px))',
+      'background:#fff',
+      'color:#0f172a',
+      'border:1px solid #cbd5e1',
+      'border-radius:10px',
+      'box-shadow:0 20px 50px rgba(15,23,42,0.25)',
+      'z-index:10000',
+      'display:flex',
+      'flex-direction:column',
+      'overflow:hidden',
+      'font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif'
+    ].join(';');
+
+    const header = document.createElement('div');
+    header.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e2e8f0;';
+
+    const title = document.createElement('div');
+    title.textContent = '题库导出（' + bank.length + ' 道题）';
+    title.style.cssText = 'font-size:16px;font-weight:700;';
+    header.appendChild(title);
+
+    const closeBtn = createSmallButton('关闭', '#64748b');
+    closeBtn.addEventListener('click', closeExportDialog);
+    header.appendChild(closeBtn);
+    dialog.appendChild(header);
+
+    const body = document.createElement('div');
+    body.style.cssText = 'display:flex;flex-direction:column;gap:12px;padding:14px;overflow:auto;flex:1;';
+
+    if (!bank.length) {
+      const empty = document.createElement('div');
+      empty.textContent = '题库为空。开启测验模式后，解析到的题目会自动存入题库。';
+      empty.style.cssText = 'color:#64748b;padding:24px;text-align:center;';
+      body.appendChild(empty);
+    } else {
+      const textarea = document.createElement('textarea');
+      textarea.readOnly = true;
+      textarea.style.cssText = 'width:100%;height:360px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:7px;padding:10px;font-size:13px;line-height:1.6;resize:vertical;font-family:monospace;';
+      textarea.value = bank.map((q, i) => (i ? '\n---\n\n' : '') + formatQuestionForExport(q)).join('');
+      body.appendChild(textarea);
+
+      const btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+
+      const copyBtn = createSmallButton('复制全部（标准格式）', '#2563eb');
+      copyBtn.addEventListener('click', () => {
+        const text = bank.map((q, i) => (i ? '\n---\n\n' : '') + formatQuestionForExport(q)).join('');
+        navigator.clipboard.writeText(text).then(() => {
+          copyBtn.textContent = '已复制';
+          copyBtn.style.background = '#16a34a';
+          setTimeout(() => { copyBtn.textContent = '复制全部（标准格式）'; copyBtn.style.background = '#2563eb'; }, 1500);
+        }).catch(() => {
+          textarea.select();
+          document.execCommand('copy');
+          copyBtn.textContent = '已复制';
+          copyBtn.style.background = '#16a34a';
+          setTimeout(() => { copyBtn.textContent = '复制全部（标准格式）'; copyBtn.style.background = '#2563eb'; }, 1500);
+        });
+      });
+
+      const downloadBtn = createSmallButton('下载 JSON', '#0f766e');
+      downloadBtn.addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(bank, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'question_bank_' + new Date().toISOString().slice(0, 10) + '.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      const clearBtn = createSmallButton('清空题库', '#dc2626');
+      clearBtn.addEventListener('click', () => {
+        if (!confirm('确定清空全部 ' + bank.length + ' 道题？此操作不可恢复。')) return;
+        saveQuestionBank([]);
+        closeExportDialog();
+      });
+
+      btnRow.append(copyBtn, downloadBtn, clearBtn);
+      body.appendChild(btnRow);
+    }
+
+    dialog.appendChild(body);
+    document.body.appendChild(dialog);
+  }
+
+  function setupExportButton() {
+    const btn = makeFloatingButton('ds-export-btn', '📤', '导出题库', 200, '#0f766e');
+    if (!btn) return;
+    btn.addEventListener('click', openExportDialog);
+  }
+
   function init() {
     setupInputToggler();
     setupQuizToggle();
     setupPromptButton();
+    setupExportButton();
     if (quizEnabled) scanAndConvert();
 
     if (!observer) {
@@ -1077,6 +1250,7 @@
         setupInputToggler();
         setupQuizToggle();
         setupPromptButton();
+        setupExportButton();
         scheduleScan();
       });
       observer.observe(document.body, { childList: true, subtree: true });
