@@ -2686,6 +2686,7 @@ B. 选项B
       </div>
       <div class="card" id="quizMapCard">
         <div class="card-header">🗺️ 题库地图 <span style="font-size:0.68rem;color:var(--text3);margin-left:8px">点击进入题库</span>
+          <button class="btn btn-sm btn-outline" onclick="openCloudQuizLoader()" style="font-size:0.7rem;padding:4px 8px;margin-right:4px">☁ 云端</button>
           <button class="btn btn-sm btn-outline" onclick="pullDesktopQuestions()" style="font-size:0.7rem;padding:4px 8px;margin-right:4px">📥 拉取桌面</button>
           <button class="btn btn-sm btn-outline" onclick="document.getElementById('syllabusFileInput').click()" style="font-size:0.7rem;padding:4px 8px;margin-right:4px">📥 导入333考纲</button>
           <button class="btn btn-sm btn-outline" onclick="toggleQuizMapView()" id="quizMapViewBtn" style="font-size:0.7rem;padding:4px 8px">列表</button>
@@ -3122,6 +3123,137 @@ window.pullDesktopQuestions = async function() {
   toast('已从桌面拉取 ' + converted.length + ' 道题，题库：' + bankName);
   if (A.syncCfg.autoSync) syncPush();
 };
+
+// ==================== CLOUD QUIZ LOADER ====================
+window.openCloudQuizLoader = function() {
+  // 自动从同步配置生成默认 URL
+  const cfg = A.syncCfg;
+  let defaultUrl = '';
+  if (cfg.geeToken && cfg.geeRepo) {
+    defaultUrl = 'https://gitee.com/' + cfg.geeRepo + '/raw/' + cfg.geePath.replace(/\.json$/, '') + '-quiz.json';
+  } else if (cfg.ghToken && cfg.ghRepo) {
+    defaultUrl = 'https://raw.githubusercontent.com/' + cfg.ghRepo + '/main/' + cfg.ghPath.replace(/\.json$/, '') + '-quiz.json';
+  }
+
+  const savedUrls = A._cloudQuizUrls || [];
+  const historyHtml = savedUrls.length ? `<div style="margin-bottom:10px"><div style="font-size:0.72rem;color:var(--text3);margin-bottom:6px">历史记录：</div><div style="display:flex;flex-direction:column;gap:4px">${savedUrls.map((u,i) => `<div style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,0.02);font-size:0.75rem;color:var(--text2)" onclick="document.getElementById('cloudQuizUrl').value='${u}'"><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u}</span><span style="color:var(--coral);cursor:pointer;font-size:0.7rem" onclick="event.stopPropagation();removeCloudUrl(${i})">✕</span></div>`).join('')}</div></div>` : '';
+
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.5);display:flex;align-items:flex-end;justify-content:center';
+  modal.innerHTML = `<div style="background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:520px;max-height:70vh;overflow-y:auto;padding:20px 16px 24px;animation:slideUp .3s ease">
+    <div style="font-weight:700;margin-bottom:4px">☁ 云端题库</div>
+    <div style="font-size:0.78rem;color:var(--text3);margin-bottom:12px">输入 JSON 文件的直链地址，支持 Gitee/GitHub raw 链接</div>
+    ${historyHtml}
+    <div style="display:flex;gap:8px;margin-bottom:10px">
+      <input id="cloudQuizUrl" value="${defaultUrl}" placeholder="https://gitee.com/用户名/仓库/raw/文件路径.json" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:0.82rem;font-family:var(--font);outline:none;background:var(--surface)">
+    </div>
+    <div id="cloudQuizPreview" style="font-size:0.78rem;color:var(--text3);margin-bottom:12px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary btn-sm" style="flex:1" id="btnLoadCloudQuiz">📥 加载题库</button>
+      <button class="btn btn-outline btn-sm" style="flex:1" onclick="this.closest('[style*=fixed]').remove()">取消</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+
+  document.getElementById('btnLoadCloudQuiz').addEventListener('click', async function() {
+    const url = document.getElementById('cloudQuizUrl').value.trim();
+    if (!url) return toast('请输入 URL');
+    const preview = document.getElementById('cloudQuizPreview');
+    preview.textContent = '加载中...';
+    preview.style.color = 'var(--text3)';
+
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const data = await resp.json();
+
+      let banks = [];
+      if (Array.isArray(data)) {
+        // 数组格式：可能是题库数组或题目数组
+        if (data.length > 0 && data[0].questions) {
+          banks = data.map(b => normalizeQuizBank(b));
+        } else if (data.length > 0 && (data[0].stem || data[0].type || data[0].question)) {
+          // 直接是题目数组
+          const bankName = url.split('/').pop().replace('.json', '').replace(/[-_]/g, ' ');
+          banks = [{ id: 'bank_cloud_' + Date.now(), name: bankName, questions: data.map(q => normalizeQuizQuestion(q)).filter(q => q.stem), createdAt: new Date().toISOString(), stats: { correct: 0, attempted: 0, total: 0, accuracy: 0 }, tags: ['云端导入'] }];
+          banks[0].stats.total = banks[0].questions.length;
+        }
+      } else if (data && typeof data === 'object') {
+        if (data.questions) {
+          banks = [normalizeQuizBank(data)];
+        } else if (data.bank && data.bank.questions) {
+          banks = [normalizeQuizBank(data.bank)];
+        } else {
+          // 可能是 { banks: [...] } 格式
+          const vals = Object.values(data).filter(v => Array.isArray(v) || (v && v.questions));
+          if (vals.length) {
+            banks = vals.map(v => Array.isArray(v) ? null : normalizeQuizBank(v)).filter(Boolean);
+            if (!banks.length && Array.isArray(vals[0])) {
+              const bankName = url.split('/').pop().replace('.json', '').replace(/[-_]/g, ' ');
+              banks = [{ id: 'bank_cloud_' + Date.now(), name: bankName, questions: vals[0].map(q => normalizeQuizQuestion(q)).filter(q => q.stem), createdAt: new Date().toISOString(), stats: { correct: 0, attempted: 0, total: 0, accuracy: 0 }, tags: ['云端导入'] }];
+              banks[0].stats.total = banks[0].questions.length;
+            }
+          }
+        }
+      }
+
+      if (!banks.length) throw new Error('未识别到题库数据');
+
+      let added = 0, totalQ = 0;
+      banks.forEach(bank => {
+        if (!bank.questions || !bank.questions.length) return;
+        // 去重：检查是否已有同名题库
+        const existing = A.quizBanks.find(b => b.name === bank.name);
+        if (existing) {
+          // 合并：添加新题目到已有题库
+          const existingIds = new Set(existing.questions.map(q => q.id));
+          const newQs = bank.questions.filter(q => !existingIds.has(q.id));
+          if (newQs.length) {
+            existing.questions.push(...newQs);
+            existing.stats.total = existing.questions.length;
+            recalcBankStats(existing);
+            totalQ += newQs.length;
+            added++;
+          }
+        } else {
+          A.quizBanks.unshift(bank);
+          totalQ += bank.questions.length;
+          added++;
+        }
+      });
+
+      if (added === 0) { preview.textContent = '题库已存在且无新题目'; preview.style.color = '#f59e0b'; return; }
+
+      // 保存历史 URL
+      if (!A._cloudQuizUrls) A._cloudQuizUrls = [];
+      if (!A._cloudQuizUrls.includes(url)) {
+        A._cloudQuizUrls.unshift(url);
+        if (A._cloudQuizUrls.length > 10) A._cloudQuizUrls = A._cloudQuizUrls.slice(0, 10);
+      }
+
+      save(); renderQuizBanks(); renderBankSelect(); renderQuizMap();
+      preview.textContent = '✓ 已加载 ' + added + ' 个题库，共 ' + totalQ + ' 道题';
+      preview.style.color = '#22c55e';
+      if (A.syncCfg.autoSync) syncPush();
+      Sound.sfx('task');
+      toast('☁ 云端题库已加载 ✓');
+      setTimeout(() => modal.remove(), 1200);
+    } catch (err) {
+      preview.textContent = '加载失败：' + err.message;
+      preview.style.color = '#ef4444';
+    }
+  });
+};
+
+window.removeCloudUrl = function(idx) {
+  if (!A._cloudQuizUrls) return;
+  A._cloudQuizUrls.splice(idx, 1);
+  save();
+  // 重新打开弹窗刷新
+  openCloudQuizLoader();
+};
+
 // ==================== MOBILE EDITOR OVERLAY ====================
 window.newNoteMobile = function(){
   document.getElementById('editorOverlay').classList.add('show');
