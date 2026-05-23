@@ -1234,23 +1234,36 @@
     const body = document.createElement('div');
     body.style.cssText = 'display:flex;flex-direction:column;gap:10px;padding:14px;';
 
+    const doSave = () => {
+      saveGiteeConfig({
+        token: tokenInput.value.trim(),
+        repo: repoInput.value.trim(),
+        path: pathInput.value.trim() || 'desktop-questions.json',
+        autoSync: autoCheck.checked
+      });
+      closeSyncConfigDialog();
+    };
+
     const tokenInput = document.createElement('input');
     tokenInput.type = 'password';
     tokenInput.placeholder = 'Gitee 私人令牌';
     tokenInput.value = cfg.token;
     tokenInput.style.cssText = 'width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:7px;font-size:14px;';
+    tokenInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSave(); });
 
     const repoInput = document.createElement('input');
     repoInput.type = 'text';
     repoInput.placeholder = '仓库，如：username/repo';
     repoInput.value = cfg.repo;
     repoInput.style.cssText = 'width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:7px;font-size:14px;';
+    repoInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSave(); });
 
     const pathInput = document.createElement('input');
     pathInput.type = 'text';
     pathInput.placeholder = '文件路径';
     pathInput.value = cfg.path;
     pathInput.style.cssText = 'width:100%;box-sizing:border-box;padding:8px;border:1px solid #cbd5e1;border-radius:7px;font-size:14px;';
+    pathInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSave(); });
 
     const autoRow = document.createElement('label');
     autoRow.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;';
@@ -1264,16 +1277,7 @@
     btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
 
     const saveBtn = createSmallButton('💾 保存配置', '#16a34a');
-    saveBtn.addEventListener('click', () => {
-      saveGiteeConfig({
-        token: tokenInput.value.trim(),
-        repo: repoInput.value.trim(),
-        path: pathInput.value.trim() || 'desktop-questions.json',
-        autoSync: autoCheck.checked
-      });
-      closeSyncConfigDialog();
-      alert('配置已保存');
-    });
+    saveBtn.addEventListener('click', doSave);
 
     const testBtn = createSmallButton('🔄 立即推送', '#2563eb');
     testBtn.addEventListener('click', async () => {
